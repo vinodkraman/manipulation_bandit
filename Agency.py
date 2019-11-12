@@ -4,8 +4,8 @@ class Agency():
         self.agents = []
         self.agent_reports = []
 
-    def create_agent(self, trust, arm_dist, num_reports, initial_reputation):
-        self.agents.append(Agent(trust, initial_reputation, arm_dist, num_reports))
+    def create_agent(self, trust, arm_dists, num_reports, initial_reputation):
+        self.agents.append(Agent(trust, initial_reputation, arm_dists, num_reports))
 
     def send_reports(self):
         reports = []
