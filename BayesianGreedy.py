@@ -17,7 +17,9 @@ class BayesianGreedy(Bandit):
                     selected_arm = index
             return selected_arm
         
-    def update_arm(self, arm, reward):
-        self.arms[arm].pulls += 1
-        self.arms[arm].rewards += reward
-        self.arms[arm].update_reward_dist(reward)
+    def update_arm(self, arm, reward, influence_limit= False):
+        if influence_limit == False:
+            self.arms[arm].pulls += 1
+            self.arms[arm].rewards += reward
+        
+        self.arms[arm].update_reward_dist(reward, influence_limit = influence_limit)

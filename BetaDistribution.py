@@ -19,3 +19,7 @@ class BetaDistribution(Distribution):
 
     def get_params(self):
         return self.alpha, self.beta
+    
+    def set_params(self, alpha, beta):
+        self.alpha = alpha
+        self.beta = beta

@@ -18,3 +18,7 @@ class Distribution(ABC):
     @abstractmethod
     def get_params(self):
         pass
+
+    @abstractmethod
+    def set_params(self):
+        pass

@@ -9,11 +9,14 @@ class Nature():
         self.num_arms = num_arms 
         self.arm_dists = []
         self.malicious_dists = []
-        self.best_arm = 0
+        self.best_arm_mean = 0
         self.agency = Agency()
 
-    def initialize_arms(self):
-        self.hidden_theta = [random() for i in range(self.num_arms)]
+    def initialize_arms(self, hidden_theta = None):
+        if hidden_theta is not None:
+            self.hidden_theta = hidden_theta
+        else:
+            self.hidden_theta = [random() for i in range(self.num_arms)]
         self.arm_dists = [BernoulliDistribution(theta) for theta in self.hidden_theta]
         self.malicious_dists = [BernoulliDistribution(1-theta) for theta in self.hidden_theta]
         self.best_arm_mean = max(self.hidden_theta)

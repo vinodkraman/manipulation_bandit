@@ -15,6 +15,3 @@ class Agent():
             reports.append(total/self.num_reports)
 
         return reports #returns an array of bernoulli parameters
-
-
-#truthful to one arm, malicious to another?

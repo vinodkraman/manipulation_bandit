@@ -17,3 +17,6 @@ class BernoulliDistribution(Distribution):
 
     def get_params(self):
         return self.theta
+    
+    def set_params(self, theta):
+        self.theta = theta
