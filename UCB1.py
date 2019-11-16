@@ -8,7 +8,7 @@ class UCB1(Bandit):
         max_value = 0
 
         #select arm
-        for (index, arm) in self.arms.items():
+        for (index, arm) in enumerate(self.arms):
             val = arm.mean_reward() + np.sqrt((2 * np.log(t)/arm.pulls))
             if val > max_value:
                 max_value = val

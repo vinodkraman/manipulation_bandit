@@ -7,7 +7,7 @@ class Bandit(ABC):
     def __init__(self, K = 10, epsilon = 0.8, prior = BetaDistribution()):
         self.K = K
         self.epsilon = epsilon
-        self.arms = {k: BanditArm(copy.copy(prior)) for k in range(K)}
+        self.arms = [BanditArm(copy.copy(prior)) for k in range(K)]
         super().__init__()
     
     @abstractmethod

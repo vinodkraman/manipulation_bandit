@@ -7,7 +7,7 @@ class ThompsonSampling(Bandit):
         max_sample = 0
 
         #select arm
-        for (index, arm) in self.arms.items():
+        for (index, arm) in enumerate(self.arms):
             sample_theta = arm.sample(influence_limit = influence_limit)
             if sample_theta > max_sample:
                 max_sample = sample_theta

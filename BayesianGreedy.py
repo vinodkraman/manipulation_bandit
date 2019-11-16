@@ -10,7 +10,7 @@ class BayesianGreedy(Bandit):
         else:
             max_value = 0
             selected_arm = 0
-            for (index, arm) in self.arms.items():
+            for (index, arm) in enumerate(self.arms):
                 val = arm.reward_dist_mean(influence_limit = influence_limit)
                 if val > max_value:
                     max_value = val
