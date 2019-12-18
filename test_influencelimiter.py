@@ -10,10 +10,10 @@ initial_reputations = 0.1
 
 nature = Nature(num_agents, K)
 theta = [0.1, 0.2, 0.8]
-mal = [False, False, False]
+trust = [True, True, True]
 
 nature.initialize_arms(theta)
-nature.initialize_agents(mal, num_reports, initial_reputations)
+nature.initialize_agents(trust, num_reports, initial_reputations)
 
 print(nature.agency.agents[0].arm_dists[0].theta)
 print(nature.agency.agents[0].arm_dists[1].theta)
@@ -75,7 +75,7 @@ for item in influence_limiter.posterior_history[2]:
 # assert(influence_limiter.bandit.arms[2].influence_reward_dist.alpha == arm2_influence_alpha_1)
 # assert(influence_limiter.bandit.arms[2].influence_reward_dist.beta == arm2_influence_beta_1)
 
-selected_arm = influence_limiter.select_arm()
+selected_arm = influence_limiter.select_arm(0)
 print(selected_arm)
 assert(selected_arm == 2)
 

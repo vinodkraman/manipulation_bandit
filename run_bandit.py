@@ -1,64 +1,58 @@
-import numpy as np
-from random import *
+from BetaDistribution import BetaDistribution
+from BayesUCB import BayesUCB
 from scipy.stats import bernoulli
-from UCB1 import UCB1
 from Random import Random
-from EpsilonGreedy import EpsilonGreedy
-from BayesianGreedy import BayesianGreedy
-from BayesianUCB import BayesianUCB
+from Nature import Nature
 import matplotlib.pyplot as plt
+import numpy as np
 from ThompsonSampling import ThompsonSampling 
 
-#number of rounds
-T = 10000
-#number of arms
-K = 5
+T = 2000
+K = 10
+num_exp = 10
 
-hidden_dist = [random() for i in range(K)]
-# hidden_dist = [0.1, 0.2, 0.1, 0.9, 0.1]
-best_arm_mean = max(hidden_dist)
+world_priors = [BetaDistribution(1, 1) for k in range(K)]
+nature = Nature(K, world_priors)
 
-ucb = UCB1(K)
-random = Random(K)
-epsilon = EpsilonGreedy(K, epsilon=0.7)
-thompson = ThompsonSampling(K)
-bayesian_greedy = BayesianGreedy(K, epsilon=0.7)
-bayesian_ucb = BayesianUCB(K)
+bayes_ucb = BayesUCB(T, K, world_priors)
+random = Random(T, K, world_priors)
+thompson = ThompsonSampling(T, K, world_priors)
+bandits = [thompson, bayes_ucb, random]
 
-bandits = [random, ucb, epsilon, thompson, bayesian_greedy, bayesian_ucb]
+key_map = {thompson: "thompson", bayes_ucb: "bayes_ucb", random: "random"}
 
-key_map = {ucb: "ucb", random: "random", epsilon:"epsilon", thompson: "thompson", bayesian_greedy: "bayesian_greedy", bayesian_ucb: "bayesian_ucb"}
-# key_map = {ucb: "ucb", random: "random", epsilon:"epsilon", thompson: "thompson"}
-
-cumulative_regret_history = {i:np.zeros(T) for i in bandits}
-total_regret = {i:0 for i in bandits}
-
-#pull each arm once
-for i in range(K):
-    reward = np.asscalar(bernoulli.rvs(hidden_dist[i], size=1))
-    for bandit in bandits:
-        bandit.update_arm(i, reward)
+cumulative_regret_history = {bandit: {exp:np.zeros(T) for exp in range(num_exp)} for bandit in bandits}
+total_regret = {bandit: {exp:0 for exp in range(num_exp)} for bandit in bandits}
 
 #run bandit
-for t in range(T):
-    for bandit in bandits:
-        arm = bandit.select_arm(t+1)
-        regret = best_arm_mean - hidden_dist[arm]
-        total_regret[bandit] += regret
-        cumulative_regret_history[bandit][t] = total_regret[bandit]
-        reward = np.asscalar(bernoulli.rvs(hidden_dist[arm], size=1))
-        bandit.update_arm(arm, reward)
+for bandit in bandits:
+    for exp in range(num_exp):
+        #reset
+        nature.initialize_arms()
+        bandit.reset()
+        for t in range(T):
+                arm = bandit.select_arm(t+1)
+                regret = nature.compute_per_round_regret(arm)
+                total_regret[bandit][exp] += regret
+                cumulative_regret_history[bandit][exp][t] = total_regret[bandit][exp]/(t+1)
+                reward = nature.generate_reward(arm)
+                bandit.update_arm(arm, reward)
+
+#average over experiments
+average_cumulative_regret_history = {i:np.zeros(T) for i in bandits}
+for (bandit, experiments) in cumulative_regret_history.items():
+    sum_regret = np.zeros(T)
+    for (experiment_num, regret) in experiments.items():
+        sum_regret += regret
+
+    sum_regret /= num_exp
+    average_cumulative_regret_history[bandit] = sum_regret
 
 #plot
-for (key, value) in cumulative_regret_history.items():
-    plt.plot(cumulative_regret_history[key], label=key_map[key])
+for (key, value) in average_cumulative_regret_history.items():
+    plt.plot(average_cumulative_regret_history[key], label=key_map[key])
 
 plt.legend()
+plt.xlabel("Round (t)")
+plt.ylabel("Cumulative Regret/t")
 plt.show()
-
-
-
-
-
-
-

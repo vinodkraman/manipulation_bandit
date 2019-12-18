@@ -13,6 +13,9 @@ class BanditArm():
 
     def mean_reward(self):
         return self.rewards/self.pulls
+    
+    def quantile(self, c):
+        return self.influence_reward_dist
 
     def sample(self, influence_limit = False):
         if influence_limit:
@@ -24,11 +27,17 @@ class BanditArm():
         if influence_limit:
             self.influence_reward_dist.update(reward == 1, reward == 0)
         else:
-            self.reward_dist.update(reward == 1, reward == 0)
+            self.reward_dist.update(reward)
 
     def reward_dist_mean(self, influence_limit = False):
         if influence_limit:
             return self.influence_reward_dist.mean()
         else:
             return self.reward_dist.mean()
+    
+    def reward_dist_quantile(self, prob, influence_limit=False):
+        if influence_limit:
+            return self.influence_reward_dist.get_quantile(prob)
+        else:
+            return self.reward_dist.get_quantile(prob)
 

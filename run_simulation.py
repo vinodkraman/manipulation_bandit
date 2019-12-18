@@ -7,27 +7,25 @@ from BayesianUCB import BayesianUCB
 from Nature import Nature
 import matplotlib.pyplot as plt
 
-T = 500
+T = 200
 K = 5
 num_agents = 5
-num_reports = 10
-initial_reputations = 1
+num_reports = 1
+initial_reputations = .1
 
 nature = Nature(num_agents, K)
-mal = [True, True, False, True, False]
-
-theta = [0.8, 0.1, 0.1, 0.1, 0.1]
+trust = [False, False, True, True, False]
 
 nature.initialize_arms()
-nature.initialize_agents(mal, num_reports, initial_reputations)
+nature.initialize_agents(trust, num_reports, initial_reputations)
 # nature.agency.agent_reports = [[0.1, 0.3, 0.8], [0.9, 0.7, 0.2]]
 
-bayesian_greedy_il = BayesianGreedy(K, epsilon=0.8)
-bayesian_greedy_nonil = BayesianGreedy(K, epsilon=0.8)
+bayesian_greedy_il = BayesianGreedy(K, epsilon=0.9)
+bayesian_greedy_nonil = BayesianGreedy(K, epsilon=0.9)
 influence_limiter = InfluenceLimiter(bayesian_greedy_il, nature.agency, num_reports)
 non_influence_limiter = NonInfluenceLimiter(bayesian_greedy_nonil, nature.agency, num_reports)
 
-epsilon = EpsilonGreedy(K, epsilon=0.8)
+epsilon = EpsilonGreedy(K, epsilon=0.9)
 bayesian_ucb = BayesianUCB(K)
 
 for i in range(K):
