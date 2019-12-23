@@ -14,6 +14,7 @@ class Agency():
 
         self.agent_reports = reports 
         return reports
-        
 
-#truthful to one arm, malicious to another?
+    def clear_agents(self):
+        self.agents = []
+        self.agent_reports = []

@@ -18,7 +18,7 @@ class Bandit(ABC):
         pass
 
     @abstractmethod 
-    def update_arm(self):
+    def update(self):
         pass
 
     def reset(self):

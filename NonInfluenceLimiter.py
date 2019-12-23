@@ -11,9 +11,15 @@ class NonInfluenceLimiter():
         self.reward_reports = reward_reports
         super().__init__()
 
-    def compute_IL_posterior(self):
+    def reset(self):
+        self.bandit.reset()
+        self.posterior_history = {}
+
+    def __compute_NIL_posterior(self):
         for (arm_index, arm) in enumerate(self.bandit.arms):
             alpha_tilde, beta_tilde = arm.reward_dist.get_params()
+            # print("arm", arm_index)
+            # print("prior", alpha_tilde, beta_tilde)
 
             #iterate through each agent and process their report
             for index, agent in enumerate(self.agency.agents):
@@ -22,17 +28,16 @@ class NonInfluenceLimiter():
 
             arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)
             #compute posterior and set to bandit influence-limited posterior
-    def select_arm(self, t, influence_limit = True):
-       return self.bandit.select_arm(t, influence_limit = influence_limit)
+    def select_arm(self, t, influence_limit= True):
+        self.__compute_NIL_posterior()
+        # [print(arm.influence_reward_dist.get_params()) for arm in self.bandit.arms]
+        return self.bandit.select_arm(t, influence_limit= influence_limit)
 
-    def compute_T_posterior(self, arm, reward):
+    def __compute_NT_posterior(self, arm, reward):
         reward_alpha = (reward == 1) * self.reward_reports
         reward_beta = (reward == 0) * self.reward_reports
-        self.bandit.arms[arm].reward_dist.update(reward_alpha, reward_beta)
+        # self.bandit.arms[arm].reward_dist.update_custom(reward_alpha, reward_beta)
+        self.bandit.arms[arm].reward_dist.update(reward)
 
-
-    def scoring_rule(self, r, q, rule = "quadratic"):
-        if r == 1:
-            return (1-q)**2
-        else:
-            return (q)**2
+    def update(self, arm, reward):
+        self.__compute_NT_posterior(arm, reward)

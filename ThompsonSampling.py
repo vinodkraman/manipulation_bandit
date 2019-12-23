@@ -15,7 +15,7 @@ class ThompsonSampling(Bandit):
 
         return selected_arm
         
-    def update_arm(self, arm, reward):
+    def update(self, arm, reward):
         self.arms[arm].pulls += 1
         self.arms[arm].rewards += reward
         self.arms[arm].update_reward_dist(reward)

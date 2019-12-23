@@ -37,6 +37,7 @@ class BanditArm():
     
     def reward_dist_quantile(self, prob, influence_limit=False):
         if influence_limit:
+            # print(self.influence_reward_dist.get_params())
             return self.influence_reward_dist.get_quantile(prob)
         else:
             return self.reward_dist.get_quantile(prob)

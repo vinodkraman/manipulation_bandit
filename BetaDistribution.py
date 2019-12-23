@@ -13,6 +13,10 @@ class BetaDistribution(Distribution):
     def update(self, data):
         self.alpha += (data == 1)
         self.beta += (data == 0)
+    
+    def update_custom(self, delalpha, delbeta):
+        self.alpha += delalpha
+        self.beta += delbeta
 
     def sample(self):
         return np.asscalar(beta.rvs(self.alpha, self.beta, size=1))
