@@ -6,6 +6,8 @@ from Nature import Nature
 import matplotlib.pyplot as plt
 import numpy as np
 from ThompsonSampling import ThompsonSampling 
+from Oracle import Oracle
+from Oracle2 import Oracle2
 import scipy.stats
 
 def mean_confidence_interval(data, confidence=0.95):
@@ -15,17 +17,22 @@ def mean_confidence_interval(data, confidence=0.95):
     h = se * scipy.stats.t.ppf((1 + confidence) / 2., n-1)
     return m, h
 
-T = 1000
-K = 10
+T = 500
+K = 5
 num_exp = 10
+num_reports = 10
+trust = [False, False, False, False]
+initial_reputations = 1
 
 world_priors = [BetaDistribution(1, 1) for k in range(K)]
-nature = Nature(K, world_priors)
+nature = Nature(K, world_priors, len(trust))
 
 bayes_ucb = BayesUCB(T, K, world_priors)
 random = Random(T, K, world_priors)
 thompson = ThompsonSampling(T, K, world_priors)
-bandits = [thompson, bayes_ucb, random]
+oracle = Oracle(bayes_ucb, nature.agency)
+# oracle2 = Oracle2(bayes_ucb, nature.agency)
+bandits = [thompson, bayes_ucb]
 
 key_map = {thompson: "Thompson", bayes_ucb: "Bayes UCB", random: "Random"}
 key_color = {thompson: "red", bayes_ucb: "blue", random: "green"}
@@ -38,14 +45,23 @@ for bandit in bandits:
     for exp in range(num_exp):
         #reset
         nature.initialize_arms()
+        nature.initialize_agents(trust, num_reports, initial_reputations)        
         bandit.reset()
+        oracle.reset()
         for t in range(T):
-                arm = bandit.select_arm(t+1)
-                regret = nature.compute_per_round_regret(arm)
-                total_regret[bandit][exp] += regret
-                cumulative_regret_history[bandit][exp][t] = total_regret[bandit][exp]/(t+1)
-                reward = nature.generate_reward(arm)
-                bandit.update(arm, reward)
+            report = nature.get_agent_reports()
+            arm = bandit.select_arm(t+1)
+            oracle_arm = oracle.select_arm(t+1)
+
+            regret = nature.compute_per_round_regret(arm)
+            regret = nature.compute_per_round_trust_regret(arm, oracle_arm)
+
+            total_regret[bandit][exp] += regret
+            cumulative_regret_history[bandit][exp][t] = total_regret[bandit][exp]/(t+1)
+
+            reward = nature.generate_reward(arm)
+            bandit.update(arm, reward)
+            oracle.update(arm, reward)
 
 #average over experiments
 average_cumulative_regret_history = {i:np.zeros(T) for i in bandits}

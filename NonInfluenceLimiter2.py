@@ -3,7 +3,7 @@ from BetaDistribution import BetaDistribution
 import numpy as np
 import copy
 
-class NonInfluenceLimiter():
+class NonInfluenceLimiter2():
     def __init__(self, bandit, agency, reward_reports):
         self.bandit = bandit
         self.agency = agency
@@ -34,7 +34,9 @@ class NonInfluenceLimiter():
         return self.bandit.select_arm(t, influence_limit= influence_limit)
 
     def __compute_NT_posterior(self, arm, reward):
-        self.bandit.arms[arm].reward_dist.update(reward)
+        reward_alpha = (reward == 1) * self.reward_reports
+        reward_beta = (reward == 0) * self.reward_reports
+        self.bandit.arms[arm].reward_dist.update_custom(reward_alpha, reward_beta)
 
     def update(self, arm, reward):
         self.__compute_NT_posterior(arm, reward)

@@ -2,6 +2,8 @@ from random import *
 from Agency import Agency
 from scipy.stats import bernoulli
 from BernoulliDistribution import BernoulliDistribution
+from Oracle import Oracle
+import numpy as np
 
 class Nature():
     def __init__(self, num_arms, world_priors, num_agents= 5):
@@ -10,6 +12,7 @@ class Nature():
         self.arm_dists = []
         self.malicious_dists = []
         self.best_arm_mean = 0
+        self.best_arm = 0
         self.agency = Agency()
         self.world_priors = world_priors
 
@@ -19,6 +22,7 @@ class Nature():
         self.arm_dists = [BernoulliDistribution(param) for param in self.hidden_params]
         self.malicious_dists = [BernoulliDistribution(1-param) for param in self.hidden_params]
         self.best_arm_mean = max(self.hidden_params)
+        self.best_arm = np.argmax(self.hidden_params)
 
     def initialize_agents(self, trustworthy, num_reports, initial_reputation):
         self.agency.clear_agents()
@@ -37,4 +41,5 @@ class Nature():
     def compute_per_round_regret(self, arm):
         return self.best_arm_mean - self.hidden_params[arm]
 
-    # def compute_per_round_trust_regret(self, arm):
+    def compute_per_round_trust_regret(self, arm, oracle_arm):
+        return max(self.hidden_params[oracle_arm] - self.hidden_params[arm],0)
