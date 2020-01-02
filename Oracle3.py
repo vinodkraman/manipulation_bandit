@@ -12,10 +12,9 @@ class Oracle3():
     def reset(self):
         self.bandit.reset()
         
-
     def _compute_IL_posterior(self):
         for (arm_index, arm) in enumerate(self.bandit.arms):
-            arm.influence_reward_dist = copy.copy(arm.reward_dist)
+            # arm.influence_reward_dist = copy.deepcopy(arm.reward_dist)
             alpha_tilde, beta_tilde = arm.reward_dist.get_params()
 
             #iterate through each agent and process their report

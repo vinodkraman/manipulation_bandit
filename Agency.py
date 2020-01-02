@@ -6,7 +6,7 @@ class Agency():
         self.agent_reports = []
         self.agent_reputations = []
 
-    def create_agent(self, trust, arm_dists, num_reports, initial_reputation):
+    def create_agent(self, trust, arm_dists, num_reports, initial_reputation=1):
         self.agents.append(Agent(trust, initial_reputation, arm_dists, num_reports))
         self.agent_reputations.append([])
 
@@ -27,11 +27,16 @@ class Agency():
         for (index, agent) in enumerate(self.agents):
             self.agent_reputations[index].append(agent.reputation)
 
-    def plot_reputations(self):
-        for (index, reputations) in enumerate(self.agent_reputations):
-            plt.plot(reputations, label=index)
-
-        plt.legend()
-        plt.xlabel("Round (t)")
-        plt.ylabel("Reputation")
-        plt.show()
+    def plot_reputations(self, agent=None, experiment=None):
+        if agent != None:
+            plt.plot(self.agent_reputations[agent], label=experiment)
+            plt.legend()
+            plt.xlabel("Round (t)")
+            plt.ylabel("Reputation")
+        else:
+            for (index, reputations) in enumerate(self.agent_reputations):
+                plt.plot(reputations, label=index)
+            plt.legend()
+            plt.xlabel("Round (t)")
+            plt.ylabel("Reputation")
+            plt.show()

@@ -8,8 +8,7 @@ class Bandit(ABC):
         self.K = K
         self.epsilon = epsilon
         self.world_priors = world_priors
-        # self.arms = [BanditArm(copy.copy(prior)) for k in range(K)]
-        self.arms = [BanditArm(copy.copy(prior)) for prior in world_priors]
+        self.arms = [BanditArm(copy.deepcopy(prior)) for prior in world_priors]
         self.T = T
         super().__init__()
     
@@ -22,4 +21,4 @@ class Bandit(ABC):
         pass
 
     def reset(self):
-        self.arms = [BanditArm(copy.copy(prior)) for prior in self.world_priors]
+        self.arms = [BanditArm(copy.deepcopy(prior)) for prior in self.world_priors]

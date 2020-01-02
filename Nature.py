@@ -24,13 +24,13 @@ class Nature():
         self.best_arm_mean = max(self.hidden_params)
         self.best_arm = np.argmax(self.hidden_params)
 
-    def initialize_agents(self, trustworthy, num_reports, initial_reputation):
+    def initialize_agents(self, trustworthy, num_reports):
         self.agency.clear_agents()
         for i in range(self.num_agents):
             if trustworthy[i]:
-                self.agency.create_agent(trustworthy[i], self.arm_dists,num_reports, initial_reputation)
+                self.agency.create_agent(trustworthy[i], self.arm_dists,num_reports)
             else:
-                self.agency.create_agent(trustworthy[i], self.malicious_dists, num_reports, initial_reputation)
+                self.agency.create_agent(trustworthy[i], self.malicious_dists, num_reports)
 
     def get_agent_reports(self):
         return self.agency.send_reports()

@@ -37,6 +37,7 @@ class NonInfluenceLimiter2():
         reward_alpha = (reward == 1) * self.reward_reports
         reward_beta = (reward == 0) * self.reward_reports
         self.bandit.arms[arm].reward_dist.update_custom(reward_alpha, reward_beta)
+        # self.bandit.arms[arm].reward_dist.update(reward)
 
     def update(self, arm, reward):
         self.__compute_NT_posterior(arm, reward)

@@ -7,7 +7,7 @@ class BanditArm():
         #3) keep track of temporary posteriors
     def __init__(self, reward_dist):
         self.reward_dist = reward_dist
-        self.influence_reward_dist = copy.copy(reward_dist)
+        self.influence_reward_dist = copy.deepcopy(reward_dist)
         self.pulls = 0
         self.rewards = 0
 

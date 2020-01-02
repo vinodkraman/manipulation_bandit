@@ -4,7 +4,7 @@ import random
 
 class Random(Bandit):
 
-    def select_arm(self, t):
+    def select_arm(self, t, influence_limit= False):
         return random.randint(0, self.K-1)
         
     def update(self, arm, reward):

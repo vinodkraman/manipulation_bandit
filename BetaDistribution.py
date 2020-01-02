@@ -19,7 +19,7 @@ class BetaDistribution(Distribution):
         self.beta += delbeta
 
     def sample(self):
-        return np.asscalar(beta.rvs(self.alpha, self.beta, size=1))
+        return np.asscalar(beta.rvs(self.alpha + 1, self.beta + 1, size=1))
 
     def get_params(self):
         return self.alpha, self.beta
