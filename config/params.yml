@@ -1,0 +1,9 @@
+
+params:
+  horizon: 500
+  no_arms: 10
+  no_exp: 25
+  no_reports: 10
+  trust_ratio: 0.30 
+  no_agents: 10
+  no_targets: 1
