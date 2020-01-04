@@ -17,15 +17,18 @@ from oracles.oracle import Oracle
 from oracles.oracle2 import Oracle2
 import scipy.stats
 import copy
+import progressbar
 
 import sys
 import yaml
 import os
+import time
 
 YAML_FILE = "./config/params.yml"
 with open(YAML_FILE, 'r') as file:
     y_d = yaml.load(file)
 
+#####################HELPER FUNCTIONS#########################
 def mean_confidence_interval(data, confidence=0.95):
     a = 1.0 * np.array(data)
     n = len(a)
@@ -33,6 +36,7 @@ def mean_confidence_interval(data, confidence=0.95):
     h = se * scipy.stats.t.ppf((1 + confidence) / 2., n-1)
     return m, h
 
+pbar = progressbar.ProgressBar(redirect_stdout=True)
 ######################FIXED HYPERPARAMATERS###################
 T = y_d["params"]["horizon"]                                               
 K = y_d["params"]["no_arms"] 
@@ -63,9 +67,10 @@ nil_b = NonInfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_report
 oracle = Oracle2(copy.deepcopy(bayes_ucb), nature.agency)
 
 bandits = [il_ucb_12, bayes_ucb, nil_b, il_random]
+# bandits = [bayes_ucb]
 
 key_map = {bayes_ucb: "bayes_ucb", random: "random", thompson: "thompson", il_ucb_12: "il_ucb_12", il_random: "il_random", nil_b:"nil_b"}
-key_color = {bayes_ucb: "blue", random: "red", thompson: "green", il_ucb_12: "orange", il_random: "purple", nil_b:"black"}
+key_color = {bayes_ucb: "blue", random: "red", thompson: "green", il_ucb_12: "green", il_random: "purple", nil_b:"red"}
 
 cumulative_regret_history = {bandit: np.zeros((num_exp, T)) for bandit in bandits}
 total_regret = {bandit: {exp:0 for exp in range(num_exp)} for bandit in bandits}
@@ -73,7 +78,7 @@ total_regret = {bandit: {exp:0 for exp in range(num_exp)} for bandit in bandits}
 cumulative_trust_regret_history = {bandit: np.zeros((num_exp, T)) for bandit in bandits}
 total_trust_regret = {bandit: {exp:0 for exp in range(num_exp)} for bandit in bandits}
 
-for exp in range(num_exp):
+for exp in pbar(range(num_exp)):
     #initialize arms
     nature.initialize_arms()
 
@@ -82,7 +87,7 @@ for exp in range(num_exp):
     # print(trust)
 
     #initialize agents
-    nature.initialize_agents(trust, num_reports, 1)
+    nature.initialize_agents(trust, num_reports, y_d["params"]["no_targets"] )
     # print("best arm: ", nature.best_arm)
 
     #reset bandits
@@ -115,7 +120,10 @@ for exp in range(num_exp):
             reward = nature.generate_reward(arm)
             bandit.update(arm, reward)
 
-    # nature.agency.plot_reputations()
+    sys.stdout.flush()
+    time.sleep(0.1)
+    pbar.update(exp+1)
+
 # average over experiments
 average_cumulative_regret_history = {i:np.zeros(T) for i in bandits}
 conf_cumulative_regret_history = {i:np.zeros(T) for i in bandits}
@@ -132,8 +140,10 @@ for (bandit, experiments) in cumulative_trust_regret_history.items():
     conf_cumulative_trust_regret_history[bandit] = conf
 
 #plot
+figure_title = ""
 for (key, value) in average_cumulative_regret_history.items():
     plt.plot(average_cumulative_regret_history[key], label=key_map[key], color=key_color[key])
+    figure_title += key_map[key] + "-"
     h = conf_cumulative_regret_history[key]
     plt.fill_between(range(T), average_cumulative_regret_history[key] - h, average_cumulative_regret_history[key] + h,
                  color=key_color[key], alpha=0.2)
@@ -141,11 +151,15 @@ for (key, value) in average_cumulative_regret_history.items():
 plt.legend()
 plt.xlabel("Round (t)")
 plt.ylabel("Mean Cumulative Regret")
-plt.ylim(0, 1)
-plt.show()
+plt.gca().set_ylim(bottom=0)
+fig_path = "./figures/" + figure_title + "MCR.png"
+plt.savefig(fig_path)
+plt.clf()
 
+figure_title = ""
 for (key, value) in average_cumulative_trust_regret_history.items():
     plt.plot(average_cumulative_trust_regret_history[key], label=key_map[key], color=key_color[key])
+    figure_title += key_map[key] + "-"
     h = conf_cumulative_trust_regret_history[key]
     plt.fill_between(range(T), average_cumulative_trust_regret_history[key] - h, average_cumulative_trust_regret_history[key] + h,
                  color=key_color[key], alpha=0.2)
@@ -153,5 +167,7 @@ for (key, value) in average_cumulative_trust_regret_history.items():
 plt.legend()
 plt.xlabel("Round (t)")
 plt.ylabel("Mean Cumulative Information Regret")
-plt.ylim(0, 1)
-plt.show()
+plt.gca().set_ylim(bottom=0)
+fig_path = "./figures/" + figure_title + "MCIR.png"
+plt.savefig(fig_path)
+plt.clf()

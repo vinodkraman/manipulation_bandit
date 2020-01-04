@@ -1,6 +1,6 @@
 
 params:
-  horizon: 500
+  horizon: 250
   no_arms: 10
   no_exp: 25
   no_reports: 10
