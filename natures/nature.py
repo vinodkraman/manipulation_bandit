@@ -41,8 +41,8 @@ class Nature():
         for i in range(self.num_agents):
             self.agency.create_agent(trustworthy[i], self.arm_dists, num_reports, self.best_arm, target_arms)
 
-    def get_agent_reports(self):
-        return self.agency.send_reports()
+    def get_agent_reports(self, attack= "sneak"):
+        return self.agency.send_reports(attack)
 
     def generate_reward(self, arm):
         return self.arm_dists[arm].sample()

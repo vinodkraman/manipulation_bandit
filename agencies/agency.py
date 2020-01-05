@@ -12,10 +12,10 @@ class Agency():
         self.agents.append(Agent(trust, initial_reputation, arm_dists, num_reports, best_arm, target_arms))
         self.agent_reputations.append([])
 
-    def send_reports(self):
+    def send_reports(self, attack):
         reports = []
         for index, agent in enumerate(self.agents):
-            reports.append(agent.generate_reports_v2(self.agents[:index], copy.deepcopy(reports)))
+            reports.append(agent.generate_reports_v2(attack, self.agents[:index], copy.deepcopy(reports)))
 
         # reports = [agent.generate_reports() for agent in self.agents]
         self.agent_reports = reports 
