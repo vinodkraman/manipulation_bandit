@@ -9,7 +9,7 @@ from bandits.thompsonsampling import ThompsonSampling
 from oracles.oracle import Oracle
 import scipy.stats
 import copy
-
+#if soley based on number of bad agents, then 11/20 at 20 should be 0.55
 def mean_confidence_interval(data, confidence=0.95):
     a = 1.0 * np.array(data)
     n = len(a)

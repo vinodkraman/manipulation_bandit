@@ -88,3 +88,47 @@ class Agent():
         else:
             # print("ello")
             return self.generate_reports_copycat_attack()
+
+    def generate_reports_true_copy_cat_attack(self, prev_agents, prev_agent_reports):
+        reports = []
+        for agent_index, agent in enumerate(prev_agents):
+            if agent.trustworthy == True:
+                reports = prev_agent_reports[agent_index]
+                reports[self.best_arm] = 0
+                for target_arm_index in self.target_arms:
+                    reports[target_arm_index] = 1
+                
+                return reports
+        
+        return self.generate_reports_copycat_attack()
+
+    def generate_reports_average_attack(self, prev_agents, prev_agent_reports):
+        reports = np.zeros(len(self.arm_dists))
+        count = 0
+        for agent_index, agent in enumerate(prev_agents):
+            reports = np.add(reports, prev_agent_reports[agent_index])
+            count += 1
+
+        if count > 0:
+            reports /= count
+            reports[self.best_arm] = 0
+            for target_arm_index in self.target_arms:
+                reports[target_arm_index] = 1
+            return reports
+        else:        
+            return self.generate_reports_copycat_attack()
+
+
+    def generate_reports_v2(self, prev_agents= [], prev_agent_reports= []):
+        if self.trustworthy == True:
+            reports = []
+            for dist in self.arm_dists:
+                reports.append(np.mean(dist.sample_array(self.num_reports)))
+            
+            return reports #returns an array of bernoulli parameters
+        else:
+            # print("ello")
+            return self.generate_reports_average_attack(prev_agents, prev_agent_reports)
+                
+        
+

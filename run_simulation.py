@@ -49,7 +49,7 @@ trust = np.full(num_agents, False)
 trust[:int(trust_ratio * num_agents)] = True
 # trust = [False, False, True, False, True]
 #####################END###############################
-
+#scales with number of attackers, not fraction
 
 world_priors = [BetaDistribution(1, 1) for k in range(K)]
 nature = Nature(K, world_priors, len(trust))

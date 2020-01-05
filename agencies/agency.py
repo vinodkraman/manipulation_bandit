@@ -1,5 +1,7 @@
 from agencies.agent import Agent
 import matplotlib.pyplot as plt
+import copy
+
 class Agency():
     def __init__(self):
         self.agents = []
@@ -11,11 +13,11 @@ class Agency():
         self.agent_reputations.append([])
 
     def send_reports(self):
-        # reports = []
-        # for agent in self.agents:
-        #     reports.append(agent.generate_reports())
+        reports = []
+        for index, agent in enumerate(self.agents):
+            reports.append(agent.generate_reports_v2(self.agents[:index], copy.deepcopy(reports)))
 
-        reports = [agent.generate_reports() for agent in self.agents]
+        # reports = [agent.generate_reports() for agent in self.agents]
         self.agent_reports = reports 
         return reports
 
