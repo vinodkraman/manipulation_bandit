@@ -99,7 +99,7 @@ for exp in pbar(range(num_exp)):
 
     # print(nature.hidden_params)
     for t in range(T):
-        reports = nature.get_agent_reports()
+        reports = nature.get_agent_reports("copy")
         # print(reports)
         oracle_arm = oracle.select_arm(t+1)
         

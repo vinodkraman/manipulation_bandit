@@ -105,15 +105,47 @@ class Agent():
     def generate_reports_average_attack(self, prev_agents, prev_agent_reports):
         reports = np.zeros(len(self.arm_dists))
         count = 0
-        for agent_index, _ in enumerate(prev_agents):
-            reports = np.add(reports, prev_agent_reports[agent_index])
-            count += 1
 
-        reports /= count
-        reports[self.best_arm] = 0
-        for target_arm_index in self.target_arms:
-            reports[target_arm_index] = 1
-        return reports
+        if len(prev_agents) == 0:
+            return self.generate_reports_sneak_attack()
+        else:
+            for agent_index, _ in enumerate(prev_agents):
+                reports = np.add(reports, prev_agent_reports[agent_index])
+                count += 1
+
+            reports /= count
+            reports[self.best_arm] = 0
+            for target_arm_index in self.target_arms:
+                reports[target_arm_index] = 1
+            return reports.tolist()
+
+    def generate_reports_max_damage(self):
+        reports = []
+        for dist in self.arm_dists:
+            reports.append(np.mean(BernoulliDistribution(1-dist.theta).sample_array(self.num_reports)))
+        
+        return reports #returns an array of bernoulli parameters
+
+    def generate_reports_random_attack(self):
+        reports = []
+        for index, __ in enumerate(self.arm_dists):
+            if index in self.target_arms:
+                reports.append(1)
+            else:
+                rating = np.random.rand()
+                reports.append(rating)
+
+        return reports #returns an array of bernoulli parameters
+
+    def generate_reports_deterministic_attack(self):
+        reports = []
+        for index, __ in enumerate(self.arm_dists):
+            if index == self.target_arms:
+                reports.append(1)
+            else:
+                reports.append(0)
+
+        return reports #returns an array of bernoulli parameters
 
     def generate_reports_v2(self, attack, prev_agents= [], prev_agent_reports= []):
         if self.trustworthy == True:
@@ -129,8 +161,11 @@ class Agent():
                 return self.generate_reports_average_attack(prev_agents, prev_agent_reports)
             elif attack == "sneak":
                 return self.generate_reports_sneak_attack()
+            elif attack == "damage":
+                return self.generate_reports_max_damage()
+            elif attack == "deterministic":
+                return self.generate_reports_max_damage()
+            elif attack == "random":
+                return self.generate_reports_random_attack()
             else:
                 exit()
-                
-        
-
