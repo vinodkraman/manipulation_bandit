@@ -44,10 +44,11 @@ num_exp = y_d["params"]["no_exp"]
 num_reports = y_d["params"]["no_reports"]  #control noise
 trust_ratio = y_d["params"]["trust_ratio"] 
 num_agents = y_d["params"]["no_agents"] 
+attack = y_d["params"]["attack"] 
 ########################################################
 trust = np.full(num_agents, False)
 trust[:int(trust_ratio * num_agents)] = True
-# trust = [False, False, True, False, True]
+# trust = [False, True, False, False, True]
 #####################END###############################
 #scales with number of attackers, not fraction
 
@@ -58,19 +59,28 @@ bayes_ucb = BayesUCB(T, K, world_priors)
 random = Random(T, K, world_priors)
 thompson = ThompsonSampling(T, K, world_priors)
 
-il_ucb_12 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
-il_random = InfluenceLimiter(copy.deepcopy(random), nature.agency, num_reports, np.exp(-1))
+# old_il_ucb = InfluenceLimiter3(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+il_ucb_10 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(0))
+il_ucb = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+il_ucb_13 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-3))
+il_ucb_15 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-5))
+
+# proposed_il_ucb = InfluenceLimiter(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+
+il_random = InfluenceLimiter3(copy.deepcopy(random), nature.agency, num_reports, np.exp(-1))
 
 nil_c = NonInfluenceLimiter(copy.deepcopy(bayes_ucb), nature.agency, 0.50, num_reports)
 nil_b = NonInfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports)
 
 oracle = Oracle2(copy.deepcopy(bayes_ucb), nature.agency)
 
-bandits = [il_ucb_12, bayes_ucb, nil_b, il_random]
-# bandits = [bayes_ucb]
+# bandits = [il_ucb_12, bayes_ucb, nil_b, il_random]
+# bandits = [il_ucb_10, il_ucb_11, il_ucb_13, il_ucb_15]
+bandits = [il_ucb, nil_b, bayes_ucb]
 
-key_map = {bayes_ucb: "bayes_ucb", random: "random", thompson: "thompson", il_ucb_12: "il_ucb_12", il_random: "il_random", nil_b:"nil_b"}
-key_color = {bayes_ucb: "blue", random: "red", thompson: "green", il_ucb_12: "green", il_random: "purple", nil_b:"red"}
+
+key_map = {bayes_ucb: "bayes_ucb", nil_b: "nil_b", il_ucb: "il_ucb", il_random: "il_random", nil_b:"nil_b", nil_c:"nil_c"}
+key_color = {nil_b: "red", il_ucb: "green", bayes_ucb:"blue"}
 
 cumulative_regret_history = {bandit: np.zeros((num_exp, T)) for bandit in bandits}
 total_regret = {bandit: {exp:0 for exp in range(num_exp)} for bandit in bandits}
@@ -99,7 +109,7 @@ for exp in pbar(range(num_exp)):
 
     # print(nature.hidden_params)
     for t in range(T):
-        reports = nature.get_agent_reports("copy")
+        reports = nature.get_agent_reports(attack)
         # print(reports)
         oracle_arm = oracle.select_arm(t+1)
         
@@ -107,6 +117,7 @@ for exp in pbar(range(num_exp)):
         oracle.update(oracle_arm, oracle_reward)
         for bandit in bandits:
             arm = bandit.select_arm(t+1)
+            # print(arm)
 
             regret = nature.compute_per_round_regret(arm)
             oracle_regret = nature.compute_per_round_trust_regret(arm, oracle_arm)

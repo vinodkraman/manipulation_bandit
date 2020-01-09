@@ -6,7 +6,7 @@ from scipy.stats import beta
 import matplotlib.pyplot as plt
 
 class InfluenceLimiter():
-    def __init__(self, bandit, agency, reward_reports, initial_reputation, track_reputation= False):
+    def __init__(self, bandit, agency, reward_reports, initial_reputation, track_reputation= True):
         self.bandit = bandit
         self.agency = agency
         self.posterior_history = {}

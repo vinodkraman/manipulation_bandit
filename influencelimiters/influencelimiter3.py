@@ -13,6 +13,8 @@ class InfluenceLimiter3():
         self.reward_reports = reward_reports
         self.initial_reputation = initial_reputation
         self.track_reputation = track_reputation
+
+        # print("Hello")
         super().__init__()
     
     def reset(self):

@@ -26,6 +26,8 @@ class NonInfluenceLimiter2():
                 beta_tilde += (1-self.agency.agent_reports[index][arm_index])*agent.num_reports
 
             # print("posterior", alpha_tilde, beta_tilde)
+            # print("arm_index", arm_index)
+            # print(alpha_tilde, beta_tilde)
             arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)
             #compute posterior and set to bandit influence-limited posterior
     def select_arm(self, t, influence_limit= True):

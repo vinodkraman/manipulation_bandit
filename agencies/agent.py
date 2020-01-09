@@ -140,7 +140,7 @@ class Agent():
     def generate_reports_deterministic_attack(self):
         reports = []
         for index, __ in enumerate(self.arm_dists):
-            if index == self.target_arms:
+            if index in self.target_arms:
                 reports.append(1)
             else:
                 reports.append(0)
@@ -164,7 +164,7 @@ class Agent():
             elif attack == "damage":
                 return self.generate_reports_max_damage()
             elif attack == "deterministic":
-                return self.generate_reports_max_damage()
+                return self.generate_reports_deterministic_attack()
             elif attack == "random":
                 return self.generate_reports_random_attack()
             else:
