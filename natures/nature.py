@@ -16,6 +16,7 @@ class Nature():
 
     def initialize_arms(self):
         self.hidden_params = [prior.sample() for prior in self.world_priors]
+        # self.hidden_params = [0.5, 0.3, 0.9, 0.2, 0.7]
         # print(self.hidden_params)
         self.arm_dists = [BernoulliDistribution(param) for param in self.hidden_params]
         self.best_arm_mean = max(self.hidden_params)
@@ -36,7 +37,7 @@ class Nature():
         target_arms = random.sample(options, num_target_items-1)
         target_arms.append(target_arm)
         target_arms = set(target_arms)
-        # print(target_arms)
+        # print("target_arm", target_arms)
         # print("target_arm ", target_arm)
         for i in range(self.num_agents):
             self.agency.create_agent(trustworthy[i], self.arm_dists, num_reports, self.best_arm, target_arms)
@@ -46,9 +47,19 @@ class Nature():
 
     def generate_reward(self, arm):
         return self.arm_dists[arm].sample()
+    
+    def generate_rewards(self):
+        self.rewards = []
+        for dist in self.arm_dists:
+            self.rewards.append(dist.sample())
 
-    def compute_per_round_regret(self, arm):
-        return self.best_arm_mean - self.hidden_params[arm]
+        return self.rewards
+
+    def compute_per_round_regret(self, arm, reward=None):
+        if reward == None:
+            return self.best_arm_mean - self.hidden_params[arm]
+        else:
+            return self.generate_reward(self.best_arm) - reward
 
     def compute_per_round_trust_regret(self, arm, oracle_arm):
         return max(self.hidden_params[oracle_arm] - self.hidden_params[arm],0)

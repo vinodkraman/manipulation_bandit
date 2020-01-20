@@ -36,10 +36,10 @@ class NonInfluenceLimiter2():
         return self.bandit.select_arm(t, influence_limit= influence_limit)
 
     def __compute_NT_posterior(self, arm, reward):
-        # reward_alpha = (reward == 1) * self.reward_reports
-        # reward_beta = (reward == 0) * self.reward_reports
-        # self.bandit.arms[arm].reward_dist.update_custom(reward_alpha, reward_beta)
-        self.bandit.arms[arm].reward_dist.update(reward)
+        reward_alpha = (reward == 1) * self.reward_reports
+        reward_beta = (reward == 0) * self.reward_reports
+        self.bandit.arms[arm].reward_dist.update_custom(reward_alpha, reward_beta)
+        # self.bandit.arms[arm].reward_dist.update(reward)
 
     def update(self, arm, reward):
         self.__compute_NT_posterior(arm, reward)

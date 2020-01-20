@@ -35,20 +35,26 @@ class InfluenceLimiter2():
         plt.show()
         
     def _compute_IL_posterior(self):
+        # print("reputations:", self.agent_reputations)
         for (arm_index, arm) in enumerate(self.bandit.arms):
             self.posterior_history[arm_index] = [copy.deepcopy(arm.reward_dist)]
 
-            alpha_tilde, beta_tilde = arm.reward_dist.get_params()
+            pre_alpha, pre_beta = copy.deepcopy(arm.reward_dist.get_params())
+            alpha_tilde, beta_tilde = copy.deepcopy(arm.reward_dist.get_params())
+            # print("arm", arm_index)
+            # print("init_params", alpha_tilde, beta_tilde)
 
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
                 # print(agent.reputation)
                 # gamma = min(1, agent.reputation)
                 gamma = min(1, self.agent_reputations[agent_index])
-                alpha_tilde = (1-gamma) * alpha_tilde + gamma*self.agency.agent_reports[agent_index][arm_index]*agent.num_reports
-                beta_tilde = (1-gamma) * beta_tilde + gamma*(1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports
+                alpha_tilde = (1-gamma) * alpha_tilde + gamma*(self.agency.agent_reports[agent_index][arm_index]*agent.num_reports + pre_alpha)
+                beta_tilde = (1-gamma) * beta_tilde + gamma*((1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports + pre_beta)
+                # print(alpha_tilde, beta_tilde)
                 self.posterior_history[arm_index].append(BetaDistribution(alpha_tilde, beta_tilde))
 
+            # print("post_params", alpha_tilde, beta_tilde)
             arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)
             #compute posterior and set to bandit influence-limited posterior
     def select_arm(self, t, influence_limit = True):
@@ -66,8 +72,10 @@ class InfluenceLimiter2():
             #     alpha_delta += self.agency.agent_reports[i][arm] * agent.num_reports * min(1, self.agency.agents[i].reputation)
             #     beta_delta += (1-self.agency.agent_reports[i][arm]) * agent.num_reports * min(1, self.agency.agents[i].reputation)
 
-            prev_alpha, prev_beta = self.bandit.arms[arm].reward_dist.get_params()
+            prev_alpha, prev_beta = copy.deepcopy(self.bandit.arms[arm].reward_dist.get_params())
             q_j = BetaDistribution(prev_alpha + alpha_delta, prev_beta + beta_delta).mean()
+            # print(q_tile_j_1)
+            # print(q_j)
             # prev_alpha, prev_beta = self.posterior_history[arm][0].get_params()
             # q_j = (prev_alpha + alpha_delta)/ (prev_alpha + prev_beta + agent.num_reports * (index + 1))
 
@@ -77,10 +85,64 @@ class InfluenceLimiter2():
                 self.agent_reputations_track[index].append(self.agent_reputations[index])
 
     def _compute_T_posterior(self, selected_arm, reward):
-        self.bandit.arms[selected_arm].reward_dist.update(reward)
+        # self.bandit.arms[selected_arm].reward_dist.update(reward)
+        alpha_tilde = (reward == 1) * self.reward_reports
+        beta_tilde = (reward == 0) * self.reward_reports
+        self.bandit.arms[selected_arm].reward_dist.update_custom(alpha_tilde, beta_tilde)
+    
+    # def _compute_T_posterior(self, selected_arm, reward):
+    #     for (arm_index, arm) in enumerate(self.bandit.arms):
+    #         pre_alpha, pre_beta = copy.deepcopy(arm.reward_dist.get_params())
+    #         alpha_tilde, beta_tilde = copy.deepcopy(arm.reward_dist.get_params())
+    #         # print("arm", arm_index)
+    #         # print("init_params", alpha_tilde, beta_tilde)
+
+    #         if arm_index == selected_arm:
+    #             alpha_tilde += (reward == 1) * self.reward_reports
+    #             beta_tilde += (reward == 0) * self.reward_reports
+
+    #         #iterate through each agent and process their report
+    #         for agent_index, agent in enumerate(self.agency.agents):
+    #             # print(agent.reputation)
+    #             # gamma = min(1, agent.reputation)
+    #             gamma = min(1, self.agent_reputations[agent_index])
+    #             alpha_tilde = (1-gamma) * alpha_tilde + gamma*(self.agency.agent_reports[agent_index][arm_index]*agent.num_reports + pre_alpha)
+    #             beta_tilde = (1-gamma) * beta_tilde + gamma*((1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports + pre_beta)
+
+    #         # self.bandit.arms[arm].reward_dist.update(alpha_tilde + reward_alpha, beta_tilde + reward_beta)
+    #         arm.reward_dist.set_params(alpha_tilde, beta_tilde)
+    #     # self.bandit.arms[selected_arm].reward_dist.update(reward)
+
+    # def _compute_T_posterior(self, selected_arm, reward):
+    #     pre_alpha, pre_beta = copy.deepcopy(self.bandit.arms[selected_arm].reward_dist.get_params())
+    #     alpha_tilde, beta_tilde = copy.deepcopy(self.bandit.arms[selected_arm].reward_dist.get_params())
+    #     # print("arm", arm_index)
+    #     # print("init_params", alpha_tilde, beta_tilde)
+
+    #     alpha_tilde = (reward == 1) * self.reward_reports + pre_alpha
+    #     beta_tilde = (reward == 0) * self.reward_reports + pre_beta
+    #     # print(alpha_tilde, beta_tilde)
+
+    #     #iterate through each agent and process their report
+    #     for agent_index, agent in enumerate(self.agency.agents):
+    #         # print(agent.reputation)
+    #         # gamma = min(1, agent.reputation)
+    #         gamma = min(1, self.agent_reputations[agent_index])
+    #         alpha_tilde = (1-gamma) * alpha_tilde + gamma*(self.agency.agent_reports[agent_index][selected_arm]*agent.num_reports + pre_alpha)
+    #         beta_tilde = (1-gamma) * beta_tilde + gamma*((1-self.agency.agent_reports[agent_index][selected_arm])*agent.num_reports + pre_beta)
+    #         # print(alpha_tilde, beta_tilde)
+
+    # #     # alpha_tilde += (reward == 1) * self.reward_reports
+    # #     # beta_tilde += (reward == 0) * self.reward_reports
+
+    # #     # self.bandit.arms[arm].reward_dist.update(alpha_tilde + reward_alpha, beta_tilde + reward_beta)
+    #     self.bandit.arms[selected_arm].reward_dist.set_params(alpha_tilde, beta_tilde)
+    # #     # self.bandit.arms[selected_arm].reward_dist.update(reward)
 
     def update(self, arm, reward):
+        # print("pre_rep update:", self.agent_reputations)
         self._update_reputations(arm, reward)
+        # print("post_rep update:", self.agent_reputations)
         self._compute_T_posterior(arm, reward)
     
     def plot_reputations(self):

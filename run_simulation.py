@@ -1,5 +1,6 @@
 from distributions.betadistribution import BetaDistribution
 from bandits.bayesUCB import BayesUCB
+from bandits.bayesUCBMean import BayesUCBMean
 from scipy.stats import bernoulli
 from bandits.random import Random
 from natures.nature import Nature
@@ -12,7 +13,26 @@ from noninfluencelimiters.noninfluencelimiter3 import NonInfluenceLimiter3
 from noninfluencelimiters.noninfluencelimiter4 import NonInfluenceLimiter4
 from influencelimiters.influencelimiter import InfluenceLimiter
 from influencelimiters.influencelimiter2 import InfluenceLimiter2
+from influencelimiters.influencelimiter2test import InfluenceLimiter2test
+from influencelimiters.influencelimiter2test3 import InfluenceLimiter2test3
+from influencelimiters.influencelimiter2test4 import InfluenceLimiter2test4
+from influencelimiters.influencelimiter2test5 import InfluenceLimiter2test5
+from influencelimiters.influencelimiter2test7 import InfluenceLimiter2test7
+from influencelimiters.influencelimiter2test6 import InfluenceLimiter2test6
+from influencelimiters.influencelimiter2test8 import InfluenceLimiter2test8
+from influencelimiters.influencelimiter2test9 import InfluenceLimiter2test9
+from influencelimiters.influencelimiter2test10 import InfluenceLimiter2test10
+from influencelimiters.influencelimiter2test11 import InfluenceLimiter2test11
+from influencelimiters.influencelimiter2test12 import InfluenceLimiter2test12
+from influencelimiters.influencelimiter2test13 import InfluenceLimiter2test13
+
+from influencelimiters.influencelimiter21 import InfluenceLimiter21
 from influencelimiters.influencelimiter3 import InfluenceLimiter3
+from influencelimiters.influencelimiter4 import InfluenceLimiter4
+from influencelimiters.influencelimiter5 import InfluenceLimiter5
+from influencelimiters.influencelimiter6 import InfluenceLimiter6
+from influencelimiters.influencelimiter7 import InfluenceLimiter7
+from influencelimiters.influencelimiter8 import InfluenceLimiter8
 from oracles.oracle import Oracle
 from oracles.oracle2 import Oracle2
 import scipy.stats
@@ -48,7 +68,7 @@ attack = y_d["params"]["attack"]
 ########################################################
 trust = np.full(num_agents, False)
 trust[:int(trust_ratio * num_agents)] = True
-# trust = [False, True, False, False, True]
+# trust = [True, False, False, True, True, False, False, False, False, True]
 #####################END###############################
 #scales with number of attackers, not fraction
 
@@ -56,12 +76,37 @@ world_priors = [BetaDistribution(1, 1) for k in range(K)]
 nature = Nature(K, world_priors, len(trust))
 
 bayes_ucb = BayesUCB(T, K, world_priors)
+bayes_ucb_mean = BayesUCBMean(T, K, world_priors)
 random = Random(T, K, world_priors)
 thompson = ThompsonSampling(T, K, world_priors)
 
 # old_il_ucb = InfluenceLimiter3(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
 il_ucb_10 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(0))
-il_ucb = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+il_ucb_4 = InfluenceLimiter2(copy.deepcopy(bayes_ucb_mean), nature.agency, num_reports, np.exp(-1))
+
+il_ucb_6 = InfluenceLimiter6(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+il_ucb_7 = InfluenceLimiter7(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+il_ucb_2 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+il_ucb_3 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+
+il_ucb_21 = InfluenceLimiter2test4(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+il_ucb_213 = InfluenceLimiter2test3(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+il_ucb_215 = InfluenceLimiter2test5(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+il_ucb_214 = InfluenceLimiter2test4(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+il_ucb_217 = InfluenceLimiter2test7(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+il_ucb_216 = InfluenceLimiter2test6(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+il_ucb_218 = InfluenceLimiter2test8(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+il_ucb_219 = InfluenceLimiter2test9(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+il_ucb_2110 = InfluenceLimiter2test10(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+il_ucb_2111 = InfluenceLimiter2test11(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+il_ucb_2112 = InfluenceLimiter2test12(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+il_ucb_2113 = InfluenceLimiter2test13(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1/2))
+
+
+il_ucb_8 = InfluenceLimiter8(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+il_ucb_5 = InfluenceLimiter5(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-1))
+
+
 il_ucb_13 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-3))
 il_ucb_15 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-5))
 
@@ -69,18 +114,21 @@ il_ucb_15 = InfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_repor
 
 il_random = InfluenceLimiter3(copy.deepcopy(random), nature.agency, num_reports, np.exp(-1))
 
-nil_c = NonInfluenceLimiter(copy.deepcopy(bayes_ucb), nature.agency, 0.50, num_reports)
+# nil_c = NonInfluenceLimiter(copy.deepcopy(bayes_ucb), nature.agency, 0.50, num_reports)
 nil_b = NonInfluenceLimiter2(copy.deepcopy(bayes_ucb), nature.agency, num_reports)
 
 oracle = Oracle2(copy.deepcopy(bayes_ucb), nature.agency)
 
 # bandits = [il_ucb_12, bayes_ucb, nil_b, il_random]
 # bandits = [il_ucb_10, il_ucb_11, il_ucb_13, il_ucb_15]
-bandits = [il_ucb, nil_b, bayes_ucb]
+# bandits = [il_ucb_218, il_ucb_219, il_ucb_213, il_ucb_214, il_ucb_216, il_ucb_217, bayes_ucb, nil_b]
+# bandits = [il_ucb_218, il_ucb_214, il_ucb_2110, bayes_ucb]
+bandits = [il_ucb_2111, il_ucb_2113, bayes_ucb]
 
 
-key_map = {bayes_ucb: "bayes_ucb", nil_b: "nil_b", il_ucb: "il_ucb", il_random: "il_random", nil_b:"nil_b", nil_c:"nil_c"}
-key_color = {nil_b: "red", il_ucb: "green", bayes_ucb:"blue"}
+
+key_map = {il_ucb_2113:"il_ucb_2113", il_ucb_2112:"il_ucb_2112", il_ucb_2111:"il_ucb_2111", il_ucb_2110:"il_ucb_2110", il_ucb_218:"il_ucb_218", il_ucb_219:"il_ucb_219", il_ucb_217:"il_ucb_217", il_ucb_216: "il_ucb_216", il_ucb_215:"il_ucb_215", il_ucb_21:"il_ucb_21", il_ucb_214: "il_ucb_214", il_ucb_8: "il_ucb_8", il_ucb_213: "il_ucb_213", bayes_ucb: "bayes_ucb", il_ucb_2: "il_ucb_2", il_ucb_6: "il_ucb_6", il_random: "il_random", nil_b:"nil_b"}
+key_color = {il_ucb_2113:"black", il_ucb_2112:"red", il_ucb_2111:"blue", il_ucb_218:"green", nil_b:"orange", il_ucb_213:"blue", il_ucb_214:"black", il_ucb_216:"brown", bayes_ucb: "purple", il_ucb_2110:"green" }
 
 cumulative_regret_history = {bandit: np.zeros((num_exp, T)) for bandit in bandits}
 total_regret = {bandit: {exp:0 for exp in range(num_exp)} for bandit in bandits}
@@ -94,7 +142,7 @@ for exp in pbar(range(num_exp)):
 
     #initialize trust order
     np.random.shuffle(trust)
-    # print(trust)
+    print(trust)
 
     #initialize agents
     nature.initialize_agents(trust, num_reports, y_d["params"]["no_targets"] )
@@ -107,30 +155,41 @@ for exp in pbar(range(num_exp)):
     #reset oracle
     oracle.reset()
 
-    # print(nature.hidden_params)
+    # print("hidden params:", nature.hidden_params)
     for t in range(T):
+        # print("")
+        # print("trust:", trust)
+        # print("round:", t)
+        rewards = nature.generate_rewards()
+        # print("rewards", rewards)
         reports = nature.get_agent_reports(attack)
         # print(reports)
-        oracle_arm = oracle.select_arm(t+1)
+        # oracle_arm = oracle.select_arm(t+1)
         
-        oracle_reward = nature.generate_reward(oracle_arm)
-        oracle.update(oracle_arm, oracle_reward)
+        # oracle_reward = nature.generate_reward(oracle_arm)
+        # oracle.update(oracle_arm, oracle_reward)
         for bandit in bandits:
             arm = bandit.select_arm(t+1)
-            # print(arm)
+            # print("selected_arm:", arm)
 
             regret = nature.compute_per_round_regret(arm)
-            oracle_regret = nature.compute_per_round_trust_regret(arm, oracle_arm)
+            # print("regret:", regret)
+            # oracle_regret = nature.compute_per_round_trust_regret(arm, oracle_arm)
 
             total_regret[bandit][exp] += regret
-            cumulative_regret_history[bandit][exp][t] = total_regret[bandit][exp]/(t+1)
+            cumulative_regret_history[bandit][exp][t] = total_regret[bandit][exp]
 
-            total_trust_regret[bandit][exp] += oracle_regret
-            cumulative_trust_regret_history[bandit][exp][t] = total_trust_regret[bandit][exp]/(t+1)
+            # total_trust_regret[bandit][exp] += oracle_regret
+            # cumulative_trust_regret_history[bandit][exp][t] = total_trust_regret[bandit][exp]
 
-            reward = nature.generate_reward(arm)
-            bandit.update(arm, reward)
+            # reward = nature.generate_reward(arm)
+            # print("reward:", reward)
+            bandit.update(arm, rewards[arm])
 
+    # il_ucb_2110.plot_reputations()
+    # il_ucb_2111.plot_reputations()
+    # il_ucb_2112.plot_reputations()
+    # il_ucb_2113.plot_reputations()
     sys.stdout.flush()
     time.sleep(0.1)
     pbar.update(exp+1)
@@ -143,12 +202,12 @@ for (bandit, experiments) in cumulative_regret_history.items():
     average_cumulative_regret_history[bandit] = mean
     conf_cumulative_regret_history[bandit] = conf
 
-average_cumulative_trust_regret_history = {i:np.zeros(T) for i in bandits}
-conf_cumulative_trust_regret_history = {i:np.zeros(T) for i in bandits}
-for (bandit, experiments) in cumulative_trust_regret_history.items():
-    mean, conf = mean_confidence_interval(experiments)
-    average_cumulative_trust_regret_history[bandit] = mean
-    conf_cumulative_trust_regret_history[bandit] = conf
+# average_cumulative_trust_regret_history = {i:np.zeros(T) for i in bandits}
+# conf_cumulative_trust_regret_history = {i:np.zeros(T) for i in bandits}
+# for (bandit, experiments) in cumulative_trust_regret_history.items():
+#     mean, conf = mean_confidence_interval(experiments)
+#     average_cumulative_trust_regret_history[bandit] = mean
+#     conf_cumulative_trust_regret_history[bandit] = conf
 
 #plot
 figure_title = ""
@@ -167,18 +226,18 @@ fig_path = "./figures/" + figure_title + "MCR.png"
 plt.savefig(fig_path)
 plt.clf()
 
-figure_title = ""
-for (key, value) in average_cumulative_trust_regret_history.items():
-    plt.plot(average_cumulative_trust_regret_history[key], label=key_map[key], color=key_color[key])
-    figure_title += key_map[key] + "-"
-    h = conf_cumulative_trust_regret_history[key]
-    plt.fill_between(range(T), average_cumulative_trust_regret_history[key] - h, average_cumulative_trust_regret_history[key] + h,
-                 color=key_color[key], alpha=0.2)
+# figure_title = ""
+# for (key, value) in average_cumulative_trust_regret_history.items():
+#     plt.plot(average_cumulative_trust_regret_history[key], label=key_map[key], color=key_color[key])
+#     figure_title += key_map[key] + "-"
+#     h = conf_cumulative_trust_regret_history[key]
+#     plt.fill_between(range(T), average_cumulative_trust_regret_history[key] - h, average_cumulative_trust_regret_history[key] + h,
+#                  color=key_color[key], alpha=0.2)
 
-plt.legend()
-plt.xlabel("Round (t)")
-plt.ylabel("Mean Cumulative Information Regret")
-plt.gca().set_ylim(bottom=0)
-fig_path = "./figures/" + figure_title + "MCIR.png"
-plt.savefig(fig_path)
-plt.clf()
+# plt.legend()
+# plt.xlabel("Round (t)")
+# plt.ylabel("Mean Cumulative Information Regret")
+# plt.gca().set_ylim(bottom=0)
+# fig_path = "./figures/" + figure_title + "MCIR.png"
+# plt.savefig(fig_path)
+# plt.clf()

@@ -25,7 +25,9 @@ class BanditArm():
 
     def update_reward_dist(self, reward, influence_limit = False):
         if influence_limit:
-            self.influence_reward_dist.update(reward == 1, reward == 0)
+            print("Hello")
+            # self.influence_reward_dist.update(reward == 1, reward == 0)
+            self.influence_reward_dist.update(reward)
         else:
             self.reward_dist.update(reward)
 

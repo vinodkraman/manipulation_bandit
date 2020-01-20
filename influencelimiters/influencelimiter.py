@@ -41,15 +41,20 @@ class InfluenceLimiter():
         for (arm_index, arm) in enumerate(self.bandit.arms):
             self.posterior_history[arm_index] = [copy.deepcopy(arm.reward_dist)]
 
-            alpha_tilde, beta_tilde = arm.reward_dist.get_params()
+            alpha_tilde, beta_tilde = copy.deepcopy(arm.reward_dist.get_params()) #need to do this
+            alpha_j, beta_j = copy.deepcopy(arm.reward_dist.get_params()) #used to make prediction
 
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
                 # print(agent.reputation)
                 # gamma = min(1, agent.reputation)
                 gamma = min(1, self.agent_reputations[agent_index])
-                alpha_tilde = (1-gamma) * alpha_tilde + gamma*self.agency.agent_reports[agent_index][arm_index]*agent.num_reports
-                beta_tilde = (1-gamma) * beta_tilde + gamma*(1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports
+
+                alpha_j += self.agency.agent_reports[agent_index][arm_index]*agent.num_reports
+                beta_j += (1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports
+
+                alpha_tilde = (1-gamma) * alpha_tilde + gamma*alpha_j
+                beta_tilde = (1-gamma) * beta_tilde + gamma*beta_j
                 self.posterior_history[arm_index].append(BetaDistribution(alpha_tilde, beta_tilde))
 
             arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)
@@ -63,13 +68,13 @@ class InfluenceLimiter():
             # gamma = min(1, agent.reputation)
             gamma = min(1, self.agent_reputations[index])
             q_tile_j_1 = self.posterior_history[arm][index].mean()
-            alpha_delta = self.agency.agent_reports[index][arm] * agent.num_reports
-            beta_delta = (1-self.agency.agent_reports[index][arm]) * agent.num_reports
-            # for i in range(index + 1):
-            #     alpha_delta += self.agency.agent_reports[i][arm] * agent.num_reports * min(1, self.agency.agents[i].reputation)
-            #     beta_delta += (1-self.agency.agent_reports[i][arm]) * agent.num_reports * min(1, self.agency.agents[i].reputation)
+            alpha_delta, beta_delta = 0, 0
+            prev_alpha, prev_beta = copy.deepcopy(self.bandit.arms[arm].reward_dist.get_params())
 
-            prev_alpha, prev_beta = self.bandit.arms[arm].reward_dist.get_params()
+            for i in range(index + 1):
+                alpha_delta += self.agency.agent_reports[i][arm] * agent.num_reports 
+                beta_delta += (1-self.agency.agent_reports[i][arm]) * agent.num_reports 
+
             q_j = BetaDistribution(prev_alpha + alpha_delta, prev_beta + beta_delta).mean()
             # prev_alpha, prev_beta = self.posterior_history[arm][0].get_params()
             # q_j = (prev_alpha + alpha_delta)/ (prev_alpha + prev_beta + agent.num_reports * (index + 1))

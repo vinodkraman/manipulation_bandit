@@ -8,9 +8,13 @@ class BayesUCB(Bandit):
         max_value = 0
 
         #select arm
+        # print("influence_limit", influence_limit)
+        # print(1 - (1/(t * np.log(self.T)**(c))))
         for (index, arm) in enumerate(self.arms):
             prob = 1 - (1/(t * np.log(self.T)**(c)))
             val = arm.reward_dist_quantile(prob, influence_limit = influence_limit) 
+            # print("arm", index)
+            # print("val", val)
             if val > max_value:
                 max_value = val
                 selected_arm = index
