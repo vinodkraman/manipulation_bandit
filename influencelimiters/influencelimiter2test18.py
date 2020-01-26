@@ -5,7 +5,7 @@ import copy
 from scipy.stats import beta
 import matplotlib.pyplot as plt
 
-class InfluenceLimiter2test10():
+class InfluenceLimiter2test18():
     def __init__(self, bandit, agency, reward_reports, initial_reputation, track_reputation= True):
         self.bandit = bandit
         self.agency = agency
@@ -40,40 +40,41 @@ class InfluenceLimiter2test10():
     def _compute_IL_posterior(self):
         # print("reputations:", self.agent_reputations)
         for (arm_index, arm) in enumerate(self.bandit.arms):
-            self.posterior_history[arm_index] = [copy.deepcopy(arm.reward_dist)]
+            self.posterior_history[arm_index] = [BetaDistribution(1, 1)]
             self.prediction_history[arm_index]=[]
 
             # alpha_tilde, beta_tilde = copy.deepcopy(arm.reward_dist.get_params())
             # pre_mean = copy.deepcopy(arm.reward_dist.mean())
             pre_alpha, pre_beta = copy.deepcopy(arm.reward_dist.get_params())
         
-            # weight = 1
-            # running_weighted_sum = copy.deepcopy(arm.reward_dist.mean())
-            running_alpha_sum = copy.deepcopy(pre_alpha)
-            running_beta_sum = copy.deepcopy(pre_beta)
-            weights = 1
+            weight = 1
+            running_weighted_sum = copy.deepcopy(arm.reward_dist.mean())
+            # running_alpha_sum = copy.deepcopy(pre_alpha)
+            # running_beta_sum = copy.deepcopy(pre_beta)
+            # weights = 1
         
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
                 gamma = min(1, self.agent_reputations[agent_index])
 
                 alpha_j = self.agency.agent_reports[agent_index][arm_index] * (agent.num_reports) + pre_alpha
-                beta_j = (1-self.agency.agent_reports[agent_index][arm_index]) * (agent.num_reports) + pre_beta
+                beta_j = (1-self.agency.agent_reports[agent_index][arm_index]) * (agent.num_reports) + pre_beta 
+
                 self.prediction_history[arm_index].append(BetaDistribution(alpha_j, beta_j))
 
-                # running_weighted_sum += gamma * self.agency.agent_reports[agent_index][arm_index]
-                # weight += gamma
+                running_weighted_sum += gamma * self.agency.agent_reports[agent_index][arm_index]
+                weight += gamma
 
-                running_alpha_sum += gamma * self.agency.agent_reports[agent_index][arm_index] * (agent.num_reports)
-                running_beta_sum += gamma * (1-self.agency.agent_reports[agent_index][arm_index]) * (agent.num_reports)
-                weights += gamma
+                # running_alpha_sum += gamma * self.agency.agent_reports[agent_index][arm_index] * (agent.num_reports)
+                # running_beta_sum += gamma * (1-self.agency.agent_reports[agent_index][arm_index]) * (agent.num_reports)
+                # weights += gamma
 
-                alpha_tilde = running_alpha_sum/weights
-                beta_tilde = running_beta_sum/weights
+                # alpha_tilde = running_alpha_sum/weights
+                # beta_tilde = running_beta_sum/weights
 
-                # q_tilde = running_weighted_sum/weight
-                # alpha_tilde = q_tilde * (agent.num_reports + pre_alpha + pre_beta)
-                # beta_tilde = (1-q_tilde) * (agent.num_reports + pre_beta + pre_alpha)
+                q_tilde = running_weighted_sum/weight
+                alpha_tilde = q_tilde * (agent.num_reports) + pre_alpha 
+                beta_tilde = (1-q_tilde) * (agent.num_reports) + pre_beta
                 self.posterior_history[arm_index].append(BetaDistribution(alpha_tilde, beta_tilde))
     
             arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)

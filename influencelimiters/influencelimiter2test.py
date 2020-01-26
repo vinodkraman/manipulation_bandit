@@ -46,22 +46,14 @@ class InfluenceLimiter2test():
             alpha_tilde, beta_tilde = copy.deepcopy(arm.reward_dist.get_params())
 
             alpha_test, beta_test = 0, 0
-            print("arm", arm_index)
-            print("init_params", alpha_tilde, beta_tilde)
+            # print("arm", arm_index)
+            # print("init_params", alpha_tilde, beta_tilde)
 
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
                 # print(agent.reputation)
                 # gamma = min(1, agent.reputation)
                 gamma = min(1, self.agent_reputations[agent_index])
-                if agent.trustworthy == True:
-                    gamma = 1
-
-                if gamma >= 1:
-                    # print(agent_index)
-                    print(agent_index)
-                    alpha_test += self.agency.agent_reports[agent_index][arm_index]*agent.num_reports
-                    beta_test += (1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports
 
                 alpha_j = self.agency.agent_reports[agent_index][arm_index]*agent.num_reports + pre_alpha
                 beta_j = (1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports + pre_beta
@@ -69,15 +61,9 @@ class InfluenceLimiter2test():
 
                 alpha_tilde = (1-gamma) * alpha_tilde + gamma*(alpha_j)
                 beta_tilde = (1-gamma) * beta_tilde + gamma*(beta_j)
-                    # print(alpha_tilde, beta_tilde)
                 self.posterior_history[arm_index].append(BetaDistribution(alpha_tilde, beta_tilde))
 
-            # print("post_params", alpha_tilde, beta_tilde)
-            if alpha_test == 0:
                 arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)
-            else:
-                # print("Hello")
-                arm.influence_reward_dist.set_params(alpha_test + pre_alpha, beta_test + pre_beta)
 
             print("post_params", arm.influence_reward_dist.get_params())
             #compute posterior and set to bandit influence-limited posterior

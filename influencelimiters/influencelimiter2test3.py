@@ -44,7 +44,6 @@ class InfluenceLimiter2test3():
 
             alpha_tilde, beta_tilde = copy.deepcopy(arm.reward_dist.get_params())
             pre_alpha, pre_beta = copy.deepcopy(arm.reward_dist.get_params())
-            alpha_test, beta_test = 0, 0
 
             # print("arm", arm_index)
             # print("init_params", alpha_tilde, beta_tilde)
@@ -53,11 +52,6 @@ class InfluenceLimiter2test3():
             for agent_index, agent in enumerate(self.agency.agents):
                 gamma = min(1, self.agent_reputations[agent_index])
 
-                # if gamma >= 1:
-                #     # print(agent_index)
-                #     alpha_test += self.agency.agent_reports[agent_index][arm_index]*agent.num_reports
-                #     beta_test += (1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports
-
                 alpha_j = self.agency.agent_reports[agent_index][arm_index]*agent.num_reports + pre_alpha
                 beta_j = (1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports + pre_beta 
                 self.prediction_history[arm_index].append(BetaDistribution(alpha_j, beta_j))
@@ -65,9 +59,6 @@ class InfluenceLimiter2test3():
                 alpha_tilde = (1-gamma) * alpha_tilde + gamma*(alpha_j)
                 beta_tilde = (1-gamma) * beta_tilde + gamma*(beta_j)
                 self.posterior_history[arm_index].append(BetaDistribution(alpha_tilde, beta_tilde))
-
-                # if gamma >= 1:
-                #     alpha_tilde, beta_tilde = copy.deepcopy(arm.reward_dist.get_params())
 
             # arm.influence_reward_dist.set_params(alpha_tilde + alpha_test, beta_tilde + beta_test)
             arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)
