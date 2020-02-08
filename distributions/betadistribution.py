@@ -9,6 +9,12 @@ class BetaDistribution(Distribution):
     
     def mean(self):
         return (self.alpha)/ (self.alpha + self.beta)
+
+    def variance(self):
+         return beta.var(self.alpha, self.beta)
+
+    def get_pdf(self, x):
+        return beta.pdf(x, self.alpha, self.beta)
     
     def update(self, data):
         self.alpha += (data == 1)

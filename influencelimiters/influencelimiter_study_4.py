@@ -5,7 +5,7 @@ import copy
 from scipy.stats import beta
 import matplotlib.pyplot as plt
 
-class InfluenceLimiter2test17():
+class InfluenceLimiter_study():
     def __init__(self, bandit, agency, reward_reports, initial_reputation, track_reputation= True):
         self.bandit = bandit
         self.agency = agency
@@ -37,50 +37,47 @@ class InfluenceLimiter2test17():
         plt.legend()
         plt.show()
         
-    def _compute_IL_posterior(self):
+    def _compute_IL_posterior(self, t):
         # print("reputations:", self.agent_reputations)
         for (arm_index, arm) in enumerate(self.bandit.arms):
-            self.posterior_history[arm_index] = [copy.deepcopy(arm.reward_dist)]
+            # self.posterior_history[arm_index] = [BetaDistribution(1, 1)]
             self.prediction_history[arm_index]=[]
 
-            # alpha_tilde, beta_tilde = copy.deepcopy(arm.reward_dist.get_params())
-            # pre_mean = copy.deepcopy(arm.reward_dist.mean())
             pre_alpha, pre_beta = copy.deepcopy(arm.reward_dist.get_params())
-        
+            new_mean = copy.deepcopy(arm.reward_dist.mean())
             weight = 1
-            running_weighted_sum = copy.deepcopy(arm.reward_dist.mean())
-            # running_alpha_sum = copy.deepcopy(pre_alpha)
-            # running_beta_sum = copy.deepcopy(pre_beta)
-            # weights = 1
+            running_weighted_sum = weight * new_mean
+            q_tilde = running_weighted_sum/weight
+
+            self.posterior_history[arm_index] = [BetaDistribution(q_tilde, 1-q_tilde)]
+            k = 2/(len(self.agency.agents) + 1)
+            prev_ema = self._compute_SMA(arm_index)
         
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
                 gamma = min(1, self.agent_reputations[agent_index])
-
-                alpha_j = self.agency.agent_reports[agent_index][arm_index] * (agent.num_reports)
-                beta_j = (1-self.agency.agent_reports[agent_index][arm_index]) * (agent.num_reports) 
+                current_ema = (self.agency.agent_reports[agent_index][arm_index] - prev_ema) * k + prev_ema
+                alpha_j = current_ema * (agent.num_reports) 
+                beta_j = (1-current_ema) * (agent.num_reports)
 
                 self.prediction_history[arm_index].append(BetaDistribution(alpha_j, beta_j))
 
-                running_weighted_sum += gamma * self.agency.agent_reports[agent_index][arm_index]
+                q_j = copy.deepcopy(current_ema)
+
+                running_weighted_sum += gamma * q_j
                 weight += gamma
 
-                # running_alpha_sum += gamma * self.agency.agent_reports[agent_index][arm_index] * (agent.num_reports)
-                # running_beta_sum += gamma * (1-self.agency.agent_reports[agent_index][arm_index]) * (agent.num_reports)
-                # weights += gamma
-
-                # alpha_tilde = running_alpha_sum/weights
-                # beta_tilde = running_beta_sum/weights
-
                 q_tilde = running_weighted_sum/weight
+
                 alpha_tilde = q_tilde * (agent.num_reports) 
                 beta_tilde = (1-q_tilde) * (agent.num_reports)
                 self.posterior_history[arm_index].append(BetaDistribution(alpha_tilde, beta_tilde))
     
+            # print("final:", alpha_tilde + pre_alpha, beta_tilde + pre_beta)
             arm.influence_reward_dist.set_params(alpha_tilde + pre_alpha, beta_tilde + pre_beta)
 
     def select_arm(self, t, influence_limit = True):
-        self._compute_IL_posterior()
+        self._compute_IL_posterior(t)
         return self.bandit.select_arm(t, influence_limit = influence_limit)
 
     def _update_reputations(self, arm, reward):
@@ -115,27 +112,4 @@ class InfluenceLimiter2test17():
             return (1-q)**2
         else:
             return (q)**2
-
-
-#ISSUE 1: Initializing Tilde
-#initializing the prior to the reward is problematic for good users after a certain point (i.e. when arm pulls
-# exceeps # of reports)
-#initializing tilde to uninformative prior is problematic since bad users will gain reputation quickly if previous good agents 
-#has low reputation
-#We need a tilde that is not as smart as the current arm pull but not dumb enough as uniformative prior. 
-#Computing posterior is problem
-
-#ISSUE2: Posterior update
-# If we update the posterior to large alpha and beta, then this slows growth of reputations for good users
-#since diminishing returns
-
-#ISSUE3: Computing q_j
-#If we treat each agents advice as its own q_j (independently), then we need to aggregate over all good users.
-#. This makes it hard if a good agent has reputation close to 1 but not above 1, we lose this agents advice completely, even though even partial taking the advice is useful!
-# But how should we compute q_j that accounts for all agents? Sequentially is problematic since diminishing returns for agents near the end!
-# 
-# 
-# neeed diminishing returns for weighted sum
-
-#decouple magnitude of alpha and beta from 
 

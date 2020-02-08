@@ -13,35 +13,31 @@ class NonInfluenceLimiter():
 
     def reset(self):
         self.bandit.reset()
-
-    # def __compute_NIL_posterior(self):
-    #     # print("reports:", self.agency.agent_reports)
-    #     for (arm_index, arm) in enumerate(self.bandit.arms):
-    #         alpha_tilde, beta_tilde = arm.reward_dist.get_params()
-    #         # print("arm", arm_index)
-    #         # print("prior", alpha_tilde, beta_tilde)
-
-    #         #iterate through each agent and process their report
-    #         for index, agent in enumerate(self.agency.agents):
-    #             alpha_tilde += self.agency.agent_reports[index][arm_index]*agent.num_reports
-    #             beta_tilde += (1-self.agency.agent_reports[index][arm_index])*agent.num_reports
-
-    #         # print("posterior", alpha_tilde, beta_tilde)
-    #         arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)
-    #         #compute posterior and set to bandit influence-limited posterior
     
     def __compute_NIL_posterior(self):
         for (arm_index, arm) in enumerate(self.bandit.arms):
-            alpha_tilde, beta_tilde = arm.reward_dist.get_params()
-
+            # self.posterior_history[arm_index] = [BetaDistribution(1, 1)]
+            pre_alpha, pre_beta = copy.deepcopy(arm.reward_dist.get_params())
+            k = 2/(len(self.agency.agents) + 1)
+            prev_ema = copy.deepcopy(self.agency.agent_reports[0][arm_index])
+        
             #iterate through each agent and process their report
-            gamma = self.gamma
             for agent_index, agent in enumerate(self.agency.agents):
-                alpha_tilde = (1-gamma) * alpha_tilde + gamma*self.agency.agent_reports[agent_index][arm_index]*agent.num_reports
-                beta_tilde = (1-gamma) * beta_tilde + gamma*(1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports
+                # print("agent:", agent_index)
+                # print("agent reputation:", self.agent_reputations[agent_index])
+                gamma = min(1, self.agent_reputations[agent_index])
+                current_ema = (self.agency.agent_reports[agent_index][arm_index] - prev_ema) * k + prev_ema
+                alpha_j = current_ema * (agent.num_reports) #+ pre_alpha
+                beta_j = (1-current_ema) * (agent.num_reports) #+ pre_beta
 
-            arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)
-            #compute posterior and set to bandit influence-limited posterior
+
+                q_j = copy.deepcopy(alpha_j/(alpha_j + beta_j))
+
+                alpha_tilde = q_j_tilde * (agent.num_reports) 
+                beta_tilde = (1-q_j_tilde) * (agent.num_reports)
+    
+            # print("final:", alpha_tilde + pre_alpha, beta_tilde + pre_beta)
+            arm.influence_reward_dist.set_params(alpha_tilde + pre_alpha,beta_tilde + pre_beta)
     def select_arm(self, t, influence_limit= True):
         self.__compute_NIL_posterior()
         # [print(arm.influence_reward_dist.get_params()) for arm in self.bandit.arms]
