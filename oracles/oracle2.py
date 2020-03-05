@@ -20,8 +20,8 @@ class Oracle2():
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
                 if agent.trustworthy == True:
-                    alpha_tilde += self.agency.agent_reports[agent_index][arm_index]*agent.num_reports
-                    beta_tilde += (1-self.agency.agent_reports[agent_index][arm_index])*agent.num_reports
+                    alpha_tilde += self.agency.agent_reports[agent][arm_index]*agent.num_reports
+                    beta_tilde += (1-self.agency.agent_reports[agent][arm_index])*agent.num_reports
 
             arm.influence_reward_dist.set_params(alpha_tilde, beta_tilde)
 

@@ -30,7 +30,7 @@ class Nature():
     #         else:
     #             self.agency.create_agent(trustworthy[i], self.malicious_dists, num_reports)
 
-    def initialize_agents(self, trustworthy, num_reports, num_target_items):
+    def initialize_agents(self, trustworthy, num_reports, num_target_items, attack_freq):
         self.agency.clear_agents()
         target_arm = np.argmin(self.hidden_params)
         options = [x for x in range(self.num_arms) if (x != self.best_arm and x != target_arm)]
@@ -40,10 +40,14 @@ class Nature():
         # print("target_arm", target_arms)
         # print("target_arm ", target_arm)
         for i in range(self.num_agents):
-            self.agency.create_agent(trustworthy[i], self.arm_dists, num_reports, self.best_arm, target_arms)
+            self.agency.create_agent(trustworthy[i], self.arm_dists, num_reports, self.best_arm, target_arms, attack_freq, i)
 
-    def get_agent_reports(self, attack= "sneak"):
-        return self.agency.send_reports(attack)
+    def shuffle_agents(self):
+        self.agency.shuffle_agents()
+
+
+    def get_agent_reports(self, t, attack= "copy"):
+        return self.agency.send_reports(t, attack)
 
     def generate_reward(self, arm):
         return self.arm_dists[arm].sample()

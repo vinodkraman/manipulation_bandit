@@ -2,9 +2,10 @@
 params:
   horizon: 1000
   no_arms: 10
-  no_exp: 20
-  no_reports: 10
-  trust_ratio: 0.20
-  no_agents: 50
+  no_exp: 50
+  no_reports: 50
+  trust_ratio: 0.30
+  no_agents: 10
   no_targets: 1
-  attack: "copy"
+  attack_freq: 0
+  attack: "sneak"

@@ -12,7 +12,7 @@ class BanditArm():
         self.rewards = 0
 
     def mean_reward(self):
-        return self.rewards/self.pulls
+        return self.rewards/(self.pulls + 1e-5)
     
     def quantile(self, c):
         return self.influence_reward_dist
