@@ -7,7 +7,7 @@ from scipy.special import betainc
 from scipy.special import beta
 import matplotlib.pyplot as plt
 
-class Influencelimiter_freq():
+class Influencelimiter_greedy():
     def __init__(self, bandit, agency, reward_reports, initial_reputation, track_reputation= True):
         self.bandit = bandit
         self.agency = agency
@@ -53,8 +53,6 @@ class Influencelimiter_freq():
             weight_0 = 1
             weight = copy.deepcopy(weight_0) #have to make dependant on initial reputation and 
             running_sum = 0.5 * weight
-            true_weight = 0
-            true_running_sum = 0
 
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
@@ -70,48 +68,51 @@ class Influencelimiter_freq():
                 running_sum += self.agency.agent_reports[agent][arm_index] * gamma
                 weight += gamma
 
-                true_running_sum += self.agency.agent_reports[agent][arm_index] * self.agent_reputations[agent]
-                true_weight += self.agent_reputations[agent]
-
                 q_j_tilde = running_sum/weight
                 self.posterior_history[arm_index].append(q_j_tilde)
     
-            # running_sum -= 0.5 * weight_0
-            # weight -= weight_0
-            self.q_tilde.append(true_running_sum/true_weight)
+            running_sum -= 0.5 * weight_0
+            weight -= weight_0
+            self.q_tilde.append(running_sum/weight)
 
     def select_arm(self, t, influence_limit = True):
         self._compute_IL_posterior(t)
-        # print("predictions", self.q_tilde)
-        W = 0
-        
-        for agent, reputation in self.agent_reputations.items():
-            W += reputation
-        
-        return self.bandit.select_arm(t, self.q_tilde, W), 0
+        arm = np.argmax(self.q_tilde)
+        return arm
         #we should also use quantile for the predictions!
 
+    # def _update_reputations(self, arm, reward):
+    #     # [print(dist.mean()) for dist in self.posterior_history[arm]]
+    #     for index, agent in enumerate(self.agency.agents):
+    #         gamma = min(1, self.agent_reputations[agent])
+    #         q_tile_j_1 = self.posterior_history[arm][index]
+    #         q_j = self.prediction_history[arm][index]
+            
+    #         self.agent_reputations[agent] += gamma * (self.scoring_rule(reward, q_tile_j_1) - self.scoring_rule(reward, q_j))
+    #         if self.track_reputation == True:
+    #             self.agent_reputations_track[agent].append(self.agent_reputations[agent])
     def _update_reputations(self, arm, reward):
         # [print(dist.mean()) for dist in self.posterior_history[arm]]
         # eta = np.sqrt((8 * np.log(len(self.agency.agents)))/self.bandit.T)
+        eta = 1
         for index, agent in enumerate(self.agency.agents):
-            gamma = min(1, self.agent_reputations[agent])
+            # gamma = min(1, self.agent_reputations[agent])
             w = self.agent_reputations[agent]
             q_tile_j_1 = self.posterior_history[arm][index]
             q_j = self.prediction_history[arm][index]
 
-            # self.agent_reputations[agent] = w*np.exp(eta * (self.scoring_rule(reward, q_tile_j_1) - self.scoring_rule(reward, q_j)))
+            self.agent_reputations[agent] = w*np.exp(eta * (self.scoring_rule(reward, q_tile_j_1) - self.scoring_rule(reward, q_j)))
 
-            self.agent_reputations[agent] += gamma * (self.scoring_rule(reward, q_tile_j_1) - self.scoring_rule(reward, q_j))
+            # self.agent_reputations[agent] += gamma * (self.scoring_rule(reward, q_tile_j_1) - self.scoring_rule(reward, q_j))
             if self.track_reputation == True:
                 self.agent_reputations_track[agent].append(self.agent_reputations[agent])
 
-    def _compute_T_posterior(self, selected_arm, reward):
-        self.bandit.update(selected_arm, reward)
+    # def _compute_T_posterior(self, selected_arm, reward):
+    #     self.bandit.update(selected_arm, reward)
 
     def update(self, arm, reward):
         self._update_reputations(arm, reward)
-        self._compute_T_posterior(arm, reward)
+        # self._compute_T_posterior(arm, reward)
     
     def plot_reputations(self):
         for (agent, reputations) in self.agent_reputations_track.items():

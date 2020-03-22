@@ -7,6 +7,7 @@ class Agent():
         self.arm_dists = arm_dists #a array of distributions
         self.num_reports = num_reports
         self.best_arm = best_arm
+        self.worst_arm = 0
         self.target_arms = target_arms
         self.attack_freq = attack_freq
         self.id = agent_id
@@ -72,7 +73,7 @@ class Agent():
         for index, dist in enumerate(self.arm_dists):
             if index == self.best_arm:
                 reports.append(0.5)
-            # elif index in self.target_arms:
+            # elif index == self.worst_arm:
             #     reports.append(1)
             else:
                 # reports.append(np.mean(dist.sample_array(self.num_reports)))
@@ -117,7 +118,8 @@ class Agent():
                 return self.generate_reports_sneak_attack()
         else:
             for dist in self.arm_dists:
-                reports.append(np.mean(dist.sample_array(self.num_reports)))
+                reports.append(dist.mean())
+                # reports.append(np.mean(dist.sample_array(self.num_reports)))
             return reports
 
     def generate_reports_prolonged_attack(self, t, prev_agents, prev_agent_reports, attack="damage"):
@@ -176,6 +178,7 @@ class Agent():
         return reports #returns an array of bernoulli parameters
 
     def generate_reports_v2(self, t, attack, prev_agents= [], prev_agent_reports= []):
+        # [print(dist.mean()) for dist in self.arm_dists]
         if self.trustworthy == True:
             reports = []
             for dist in self.arm_dists:

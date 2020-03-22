@@ -1,7 +1,7 @@
 from bandits.bandit import Bandit
 import numpy as np
 
-class UCB_influence(Bandit):
+class UCB_influence_2(Bandit):
 
     def select_arm(self, t, q_tilde, W):
         selected_arm = 0
@@ -15,7 +15,7 @@ class UCB_influence(Bandit):
                 # val = arm.mean_reward()*(arm.pulls)/(arm.pulls + W) + q_tilde[index] * (W/(arm.pulls + W)) + np.sqrt((2 * np.log(t)/((arm.pulls) + W)))
                 # val = arm.mean_reward()*(1)/(np.exp(W)) + q_tilde[index] * (1 - 1/(np.exp(W))) + np.sqrt((2 * np.log(t)/((arm.pulls) + W)))
                 # val = arm.mean_reward()*(1)/(np.exp(W)) + q_tilde[index] * (1 - 1/(np.exp(W)))
-                val = (arm.mean_reward() + np.sqrt((2 * np.log(t)/(arm.pulls))))*(1)/(W) + q_tilde[index] * (1 - 1/(W))
+                val = (arm.mean_reward())*(1)/(W) + q_tilde[index] * (1 - 1/(W))
                 # val = arm.mean_reward() + np.sqrt((2 * np.log(t)/arm.pulls))
 
                 if val > max_value:

@@ -7,7 +7,7 @@ from scipy.special import betainc
 from scipy.special import beta
 import matplotlib.pyplot as plt
 
-class Influencelimiter_freq():
+class Influencelimiter_single():
     def __init__(self, bandit, agency, reward_reports, initial_reputation, track_reputation= True):
         self.bandit = bandit
         self.agency = agency
@@ -16,7 +16,7 @@ class Influencelimiter_freq():
         self.reward_reports = reward_reports
         self.initial_reputation = initial_reputation
         self.track_reputation = track_reputation
-        self.q_tilde = []
+        self.q_tilde = {}
         super().__init__()
     
     def reset(self):
@@ -45,64 +45,49 @@ class Influencelimiter_freq():
         return np.mean(npa[:,arm_index])
     
     def _compute_IL_posterior(self, t):
-        self.q_tilde = []
         for (arm_index, arm) in enumerate(self.bandit.arms):
-            self.prediction_history[arm_index]=[]
-            self.posterior_history[arm_index] = [0.5]
-
-            weight_0 = 1
-            weight = copy.deepcopy(weight_0) #have to make dependant on initial reputation and 
-            running_sum = 0.5 * weight
-            true_weight = 0
-            true_running_sum = 0
+            weight = 0 #have to make dependant on initial reputation and 
+            running_sum = 0
 
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
-                # print(agent.id)
-                gamma = min(self.agent_reputations[agent], 1)
+                # print(agent.id
+                running_sum += self.agent_reputations[agent] * self.agency.agent_reports[agent][arm_index]
+                weight += self.agent_reputations[agent]
 
-                temp_running_sum = running_sum + (self.agency.agent_reports[agent][arm_index])
-                temp_weight = weight + 1
-
-                q_j = temp_running_sum / temp_weight
-                self.prediction_history[arm_index].append(q_j)
-
-                running_sum += self.agency.agent_reports[agent][arm_index] * gamma
-                weight += gamma
-
-                true_running_sum += self.agency.agent_reports[agent][arm_index] * self.agent_reputations[agent]
-                true_weight += self.agent_reputations[agent]
-
-                q_j_tilde = running_sum/weight
-                self.posterior_history[arm_index].append(q_j_tilde)
-    
-            # running_sum -= 0.5 * weight_0
-            # weight -= weight_0
-            self.q_tilde.append(true_running_sum/true_weight)
+            self.q_tilde[arm_index] = running_sum/weight
 
     def select_arm(self, t, influence_limit = True):
         self._compute_IL_posterior(t)
-        # print("predictions", self.q_tilde)
         W = 0
         
         for agent, reputation in self.agent_reputations.items():
             W += reputation
         
-        return self.bandit.select_arm(t, self.q_tilde, W), 0
+        return self.bandit.select_arm(t, self.q_tilde, W)
         #we should also use quantile for the predictions!
 
+    # def _update_reputations(self, arm, reward):
+    #     # [print(dist.mean()) for dist in self.posterior_history[arm]]
+    #     for index, agent in enumerate(self.agency.agents):
+    #         gamma = min(1, self.agent_reputations[agent])
+    #         q_tile_j_1 = self.posterior_history[arm][index]
+    #         q_j = self.prediction_history[arm][index]
+            
+    #         self.agent_reputations[agent] += gamma * (self.scoring_rule(reward, q_tile_j_1) - self.scoring_rule(reward, q_j))
+    #         if self.track_reputation == True:
+    #             self.agent_reputations_track[agent].append(self.agent_reputations[agent])
     def _update_reputations(self, arm, reward):
         # [print(dist.mean()) for dist in self.posterior_history[arm]]
         # eta = np.sqrt((8 * np.log(len(self.agency.agents)))/self.bandit.T)
+        eta = 0.1
         for index, agent in enumerate(self.agency.agents):
-            gamma = min(1, self.agent_reputations[agent])
+            # gamma = min(1, self.agent_reputations[agent])
             w = self.agent_reputations[agent]
-            q_tile_j_1 = self.posterior_history[arm][index]
-            q_j = self.prediction_history[arm][index]
 
-            # self.agent_reputations[agent] = w*np.exp(eta * (self.scoring_rule(reward, q_tile_j_1) - self.scoring_rule(reward, q_j)))
+            self.agent_reputations[agent] = w*np.exp(eta * (1-self.scoring_rule(reward, self.agency.agent_reports[agent][arm])))
 
-            self.agent_reputations[agent] += gamma * (self.scoring_rule(reward, q_tile_j_1) - self.scoring_rule(reward, q_j))
+            # self.agent_reputations[agent] += gamma * (self.scoring_rule(reward, q_tile_j_1) - self.scoring_rule(reward, q_j))
             if self.track_reputation == True:
                 self.agent_reputations_track[agent].append(self.agent_reputations[agent])
 
