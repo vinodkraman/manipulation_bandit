@@ -4,7 +4,7 @@ from distributions.betadistribution import BetaDistribution
 import copy
 
 class Bandit(ABC):
-    def __init__(self, T, K, world_priors, epsilon = 0.8):
+    def __init__(self, T, K, world_priors, epsilon = 0.1):
         self.K = K
         self.epsilon = epsilon
         self.world_priors = world_priors

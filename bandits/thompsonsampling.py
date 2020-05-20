@@ -19,3 +19,8 @@ class ThompsonSampling(Bandit):
         self.arms[arm].pulls += 1
         self.arms[arm].rewards += reward
         self.arms[arm].update_reward_dist(reward)
+
+
+#with some probability, you exploit your current knowledge, and with some probability
+#you exploit expert advice you cant know when is right and wrong. So your best shot
+# is to probabilistically just check. 

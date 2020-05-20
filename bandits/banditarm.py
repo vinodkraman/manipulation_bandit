@@ -10,9 +10,10 @@ class BanditArm():
         self.influence_reward_dist = copy.deepcopy(reward_dist)
         self.pulls = 0
         self.rewards = 0
+        self.real_pulls = 0
 
     def mean_reward(self):
-        return self.rewards/(self.pulls + 1e-5)
+        return self.rewards/(self.pulls)
     
     def quantile(self, c):
         return self.influence_reward_dist
@@ -25,7 +26,7 @@ class BanditArm():
 
     def update_reward_dist(self, reward, influence_limit = False):
         if influence_limit:
-            print("Hello")
+            # print("Hello")
             # self.influence_reward_dist.update(reward == 1, reward == 0)
             self.influence_reward_dist.update(reward)
         else:

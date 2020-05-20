@@ -1,0 +1,267 @@
+4/23/2020:
+
+Today, we looked at algorithms to improve the robustness against sleeper cell attacks. We found that
+by setting an informative prior as the empirical mean, we can severly dampen the reputation
+gain of experts when pulling arms. The down side to this is that trustworthy experts 
+can only be distinguished from the malicious experts only wehen malicious experts exist
+
+So in the degenerate case where there are only trustworthy experts, the algorithm fails
+to use expert advice, since the change in reputation is very small. 
+
+By simply changing the prior from 0.5 to arm.mean_reward().
+
+Findings: if you change the prior from 0.5 to arm.mean_reward() you severly dampen the reputation gain across all experts
+If you pair this with what we originally had, you get some really nice results.
+
+idea, in the beginning q_tilde is the mean, so if we use UCB, then in the beginning UCB is run
+But then, as we learn the reputations, we should, kill the exploration term slowly, then we would exploit 
+solel q_tilde. reputation is difficult to build!
+
+the same problem persists with the other approach. If the attackers wait out long enough until all experts have high reputation, 
+then when they attack, they will have sufficient reputation to convince the learner to select
+an arm that they have truthfully reported on. So its just a matter of time, the best solution
+is to find a way to mitigate the problem with what we used before, randomly following your advice, 
+and so on... need to think about this more, but I think we are making progress. Attackers can just postpone it. 
+
+I need to figure out an algorithm that exploits q_tilde, and at the same time, exploits own knowledge. Clearly has to use some sort of randomness. 
+We tried so many things here, like forexample randomly selection betwween q_tilde and x_hat. But this wont work, because of the fact that 
+the mean over the other arms may be biased, and have lots of error. We don't care about exploration here. Or in reality, 
+exploration for us, is to learn the agent reputations. Once we have learnt agent reputations, we exploit their knowledge, but also with uncertainty. 
+the problem we are facing  is that, if we follow expert advice then we typically are pulling one or more atms repeatedly. 
+Then, this means if we run UCB, the bound for arms that have not been pulled are much higher than that 
+of the arms that have been pulled repeatedly. In this sense, there is an imbalance in the number of times each arm is pulled. Its 
+so heavly unbalance that it just doesn't work. Maybe we can control this unbalance, in some way. If we try to maximize by maximizing the mean, this is also prblemeatic, because
+we don't account for the number of times we pulled an arm. 
+
+even if u use the informative prior, reputation update is small, but not small enough, so they simply wait until they gain enough reoutation, then attack, then there is no way 
+
+
+4/26
+Experts should give predictions on the reward. This is the only thing that makes sense to me. Because otherwise, if mu and the expert advice are too similar, 
+then eventually experts won't get reputation becuase the difference their advice and the mean will be very small. Meaning, we need there to be a large difference 
+for us to actually see a change. Any who, if we are modelling a content based recommender system for a single user, then the arms represent latent partitions of the recommendation space
+. Each partition, or arm, is charaterized by some distribution D_a that represents a distribution over the label space that the user has over the items in the 
+in that partition. The simplest case are binary labels, {0, 1}, for which each arm is charaxterized by a Bernoulli random variable with mean p. 
+
+We represent an item with label l from partition k, as a sample from the corresponding distribution D_a. In each round, we generate k items (represented by their labels) by sampling from D_k for all k. 
+These labels are initially hidden from the banditl. We as the bandit need to select one item to recommend to the user. The user acts only on the recommended item, and the corresponding label is revealed to the algorithm. 
+The algorithm then incures a per-round regret of max(label) - labels[selected_arm]. The algorithm plays this game over T rounds, we define the cumulative regret as follows:
+
+
+
+exploit expert advice for some number rounds, then randomly choose arms for some number of rounds, th, problem, they can simply attack when we exploit arms. 
+
+go certain rounds where we don't update? evaluation period. Randomly evaluate at different rounds. we 
+
+
+The user need not report back binary. Consider a case where the user reports back a different rating like 3.8. We can represent this as 
+a probability distribution over the label space. There is a prediction space, and there is a label space. a prediction is a distribution over the labels. 
+
+In the binary label space, a prediction is a simply a single value p, that is probability of label 1
+
+If label space is 1,2,3,4, 5 then a rating could be 3.8. A prediction here is a categorical distribution. 
+
+experts provide ratings, recommendation system provides a prediction. 
+
+are experts providing predictions?? or are they providing ratings??
+
+a prediction is a distribution over the label space. If the label space if 0-1, then each expert
+provides a prediction on on the probability that the user will like each of these items.
+
+Our algorithm combines the expert predictions to compute a prediction of its own. Expert should provide prediction, which is a distribution over the label space. "There is a 90% chance that the user will like this movie" and "that movie.. etc....".
+
+The experts provide predictions, which we use to compute our predictions? 
+
+Or, do experts provide ratings? No experts should provide predictions. Then we compute our predictions and influence limited predictions. But the experts predictions should be on the current item's quality. Like lets say the mean is 0.6, if the reward is 1, then the expert should provide something between 0.5 and 1
+And likewise for 0. Experts provide predictions, which is a distribution over the label space. We combine this expert predictions. 
+
+In each round, experts provide a prediction on each item. Each preidction is a distribution over the target user's label for the given item. 
+
+The bandit uses the predictions from each expert to form a probability distribution over the item. Then, to select an arm, the algorithm simply maximizes 
+the expected 1 label, after which it recieves the reward only for the recommended reward. 
+
+
+experts provide predictions on likelihood that user will like each movie. Based on these predictions, we select an arm. How does this differ from EXP4? EXP4 experts map a context to probabilty distribution over arms. Its also for 
+
+I just don't know how we should use the 
+
+we have a bunch of experts and a bunch of different items. We want to be able to give the user some recommendations. I.e we present
+the user a set of options, and the user selects one of them. For example, we present the user with the top-three options, and the user
+selects one at random, or someother metric, and we get feedback on the selected item. If we do it this way, where we only recommend one item. 
+Then its really hard. 
+
+K latent partitions. User has a distribution over the label space of each partition. In each round, a new item is sampled from each partition
+. Experts provide their prediction on whether the user will like the items or not. Using the predictions for each of the items, we need to 
+select an item (or maybe group of items?) to recommend. The user follows the suggestion, and provides feedback to the algorithm on whether or not the user likes the item. 
+
+Start writing this in overleaf. Good enough. 
+
+
+So the idea is this, we get predictions from all the experts, and we recommend 3 items to the user. The user selects the item corresponding to the partition that 
+they most like. They experience the item and provide back their response. So our goal is two fold, to recommend a movie that a user will like. But to also a recommend a 
+movie that is in the user's preferences. What type of regret is that? Nah, doesnt make sense. If the user will 
+like it, we don't care. 
+
+
+So the idea is this: we are a recommendation platform. We partition the recommendation space into K latent parition. In each round, nature presents
+us with items from each partition, and we need to recommend an item to the user. We consider a binary label space, where the user either
+ouputs LO or HI for a recommended item. This label serves as our reward, so the goal is to maximize the user HI labels. In each round, nature generates a set of items
+to recommend by sampling from each partition. Before selecting an item to recommend, we as the algorithm gain access to N experts who provide their prediction 
+on whether the target user will LO or HI each item. The prediction space X is the set of distributions over the labels. In the case of binary labels then, a prediction 
+is fully characterized by p, the probability that the user will label the item as HI. The algorithm uses the advice to select an arm which it presents to the user.
+The user, then returns its feedback which the algorithm uses to updates its beleifs on the user's preferences as well as its belief on trustworthiness of experts. 
+
+To select an arm, the algorithm first sorts the predictions, takes the top-K, and then uses the predictions in 
+
+
+if we base it off of rewards, there is no way an attacker can attacl. because rewards are also random. We have to sort of change the objective a bit. 
+We want to recommend the item which the rater gives Hi in the prefernce they prefer. 
+
+In the current setup, experts give prediction on K different events. And we select the event with the maximum 
+expected turnout. We assume binary prediction scheme. The user either votes yes or no to a particular item. Of course
+we want to recommend an item that the voter votes yes on. The problem, however, is that attacks are not that strong. This is beacause
+the attackers cant just nuke a specific item without touching anything else.  
+
+If experts can sink the predictions on one item, while truthfully reporting on another. And then the other arm is better, that's when problems occur. Like you just need to sink right below
+how would experts know that. 
+
+users rate movies from 1-5. The rating is generated via a binomial distribution with 5 trials and p probability of success, which is hidden from the learner. 
+
+
+We cant necessarilly just update the mean. Because its biased. If we only pull an arm when its 1, then we will only 
+learn that its 1. What we could do, is take expert advice, and we update. We select the arm with the highest likelihood, and then pdate the remaining parameters? 
+
+Or we stop updating the parameters completely? question is whether or not to update the actualy mean. It is an observation. What if we did, if we dont select we set it to 0. Then, I think, we would unnecesariy downweight things. We don't know the actualy reward, but we have approximations from experts. We could take the max class. 
+
+
+Experts, if using expert advice, then we need to update the parameters of all arms, but taking the max class. and updating. 
+
+
+if you had three labels 1, 2, 3, then an expert can hide underneath, report 1 and 2 trutfully but misreport on 3, reporting it as a 1. Then 
+we will select one of the 2's which the malicious experts correctly reported on if we only followed q_tilde, which would cause their reputation to increase
+but our regret will increase. There is no way for us to know since to us it seems like the majority of good experts are telling us the option is bad, there is no reason
+
+
+here, experts are prediction the final result, and we are selecting an arm based on its reward. In contrats, for the regular MAB, we select an arm based on the expected value. If we select based on 
+value, we are bound to overestimate the mean every time. Just because we don't select an arm doesn't mean that it is has 0 reward. So we need someway to add rewards 
+to the reward. 
+
+we recommend one movie, we get feedback only on that movie. But the problem is, we wonly get good responses for each movie, 
+so we will falsely belief that each movie is amazing. since we only observe the truth. We need someway ot estimating the mean, 
+or dampening the mean. so that it is truly representative. we have other predictions, but those are simply distributions and we cant use that
+to update our parameters. I also dont think it is a good idea to modify the mean of something we didn't pick. Like lets say we picked arm 2, and we
+recieved a reward of 1. We could add 1 to num and denominator. But that seems unfair. 
+
+
+first sort with regards to predictions, then pick the best one with the lowest number of pulls relative to the total. 
+
+.99 - 100 pulls --> 99
+.98 - 50 pulls --> smaller 
+.96 --> if difference in prediction is small. amongst top three? 
+
+cant always pull the arm that is best  --> leads to bad estimation of mean because you only pull the . Let's say evaluating based on mean.
+pull the arm with the highest pulls but lowest score -->
+
+only update prior during exploration, not when exploit. 
+
+#we should stop exploring arms that have been pulled a lot. This way, as we move further, we will explore less and less, and then finally stop exploring and fully exploiting.
+#we don't need to keep exploring if we know how good an arm is already. if the confidence is below some threshold than jst skip. 
+
+
+
+for each arm, experts provide a distribution over 
+
+Least likely to return 1
+
+exploration helps us comput
+
+Most likely to retun 1
+
+The idea is that we use expert advice to filter out arms that might be bad. but te advice might be bad, so we need to properly filter it out. We have an initial exploration phase to build up a prior. 
+
+
+when the experts prediction equals the arm that we picked. Then, that means that we have picked the arm that is really good. If we keep picking an arm and notce that it is matching the expert's advice, then this
+arm must be really good, because the experts are also saying its good. basically we keep track of the total times we use the intersection to prune. Two can't be wrong. So we prune away on both ends. At the end, we only consider one
+and the other. it converges onto the same arm. 
+
+
+what do we want. experts give their prediction, we add that to the vector, and use the vector in the next round. we shoudlnt use their 
+prediction as is. Instead we consider their past predictions. 
+
+start with all arms in the set - all arms can be good. Then pick an arm, see expert advice and update the vector. Expert advice is kind of like a suggestion
+to look into this arm. Then keep doing that over several rounds, we build up a vector that looks at the number of recommendations for each arm.
+
+
+look at the number of previous pull for the experts recommened arm. If it is large, than that means it is good. 
+Guided exploration, meaning we should only explore those arms which the experts suggest to explore and not all arms. 
+
+
+what do we want it to do - we want to be like if the experts suggest an arm, we want to select that arm. 
+we keep track of the number of times our selection for an arm matches an experts prediction. 
+
+if an experts prediction mathces our own, we know we will get a reward, but we dont care about the reward. 
+
+each time an expert reccomends an arm, its a suggestion to look further into that arm. The more times experts recommend an arm,
+the more we should look into it. 
+
+we should more often look into those arms
+
+an expert picks an arm in each round
+
+when we exploit, we exploit to our best knowledge so far. When we explore, we should only explore those arms
+
+problem here is that by only exploring a few, we face the problem of not exploring the other arms, so like for UCB, the exploration bonus
+will dominate. The solution around this, is to modify the set of candidate arms entirely, so that we only explore and exploit those arms. 
+
+when exploring, or when picking arms, we should m
+
+you have to reduce the set over which u explore 
+
+xperts provide predictions on the label space for each item. aggregate the predidctions
+
+
+current mean + xploration bonus + best arm bonus
+
+property: the arm selected by trustworthy experts will match the best arm often. so if we keep track of the amount of times each arm is chosen by experts early. 
+
+we can prune away bad arms. give each arm a bonus which is some function of the number of times it is the best option. (best option not max reward, because otherwise we can just look at max reward). 
+
+experts tell us which option is the best relative to each other one. So before we make a selection we know which arm is the best in that round. 
+
+The property we wish to exploit is that the truly best arm will produce a reward relatively better than otherwise other arms 
+so we need some function of the number of times a given arm as been deemed the relative best arm.
+
+you run MAb algorithm and in one round, you choose an arm and it is the arm chosen by the agents, then you want to select this arm more often than other arms. 
+
+
+we have an expert arm, 
+
+we have a prediction arm, we always follow the prediction arm but, the prediction arm picks among those arms that are highly rated. 
+
+place more weight on those arms that the agents prefer more. if experts indicate this arm and that arm. Then when exploring, place more weight on these arms. 
+
+
+need to figure out ways to reduce search space. We know that experts provide predictions on 
+
+idea is to gradually reduce the space that the arbitrary bandit model works on. initially works on everything, but then need to start filtering out sub optimal arms 
+based on expert advice. 
+
+
+if the experts recommend an arm, then we want to give that arm a little bonus. This is a because, the experts are more likely to recommend an arm that is good. 
+
+#so what we want is to give that arm a little bonus, but not too much. Like if a sub-optimal arm is picked, then 
+its bonus + ucb should be less than ucb of optimal. 
+
+mean_sub + exploration_bonus_sub + bonus < mean_best + exploration_bonus_best
+
+bonus < mean_best + exploration_bonus_best - mean_sub + exploration_bonus_sub
+
+We want to equal bonus to be equal for all arms
+
+if all experts are untrustworthy, we don't want to give them the opportunity to add to the bonus. Its esp probelatic, if they are honst on one arm, and dishonest on another. Because their bonus on 
+the dishonest one will be small, but the bonus on the honest one will be big, so we get screwed even furhter. 
+
+
+we cant have a scenario where we add the bonus to one arm but not another. If we add the bonus to the arm chosen by the adversaries. Then, we need to make sure that the bonus we add is smaller enough so that its smaller than the best arm, other wise, there is no way. 
+
+it is kinda of like full information. We can update everything, all at once. 

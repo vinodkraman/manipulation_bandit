@@ -113,7 +113,7 @@ class InfluenceLimiter_study_10():
         for (agent, reputations) in self.agent_reputations_track.items():
             plt.plot(reputations, label=agent.id)
         plt.legend()
-        plt.ylim([0, 1])
+        # plt.ylim([0, 1])
         plt.xlabel("Round (t)")
         plt.ylabel("Reputation")
         plt.show()

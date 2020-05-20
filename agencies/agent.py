@@ -11,30 +11,42 @@ class Agent():
         self.target_arms = target_arms
         self.attack_freq = attack_freq
         self.id = agent_id
+        self.second_best = 0
+        self.rewards = []
 
-    # def generate_reports(self):
-    #     reports = []
-    #     for dist in self.arm_dists:
-    #         total = 0
-    #         for i in range(self.num_reports):
-    #             total += dist.sample()
+    def compute_logit(self, d):
+        return np.log(d/(1-d))
 
-    #         reports.append(total/self.num_reports)
+    def add_noise(self, data, sigma= 0):
+        noise = np.random.normal(0, sigma, len(self.arm_dists))
+        logits = [self.compute_logit(param) for param in data]
+        new_hidden_logits = noise + logits
+        final = [1/(1+np.exp(-val)) for val in new_hidden_logits]
+        return final
 
-    #     return reports #returns an array of bernoulli parameters
-    # def generate_reports(self):
-    #     reports = []
-    #     for dist in self.arm_dists:
-    #         total = 0
-    #         for i in range(self.num_reports):
-    #             if not self.trustworthy:
-    #                 total += BernoulliDistribution(1-dist.theta).sample()
-    #             else:
-    #                 total += dist.sample()
 
-    #         reports.append(total/self.num_reports)
+    def add_biased_noise(self, data, sigma= 1):
+        mult = np.array([-1 if elem == 0 else 1 for elem in self.rewards])
+        noise = np.array([np.random.normal(0, sigma) for elem in mult])
+        # noise = np.random.normal(0, sigma, len(self.arm_dists))
+        # mult = np.array([-1 if elem == 0 else 1 for elem in self.rewards])
+        # noise = np.multiply(noise, mult) 
+        logits = np.array([self.compute_logit(param) for param in data])
+        new_hidden_logits = noise + logits
+        final = [1/(1+np.exp(-val)) for val in new_hidden_logits]
+        return final
 
-    #     return reports #returns an array of bernoulli parameters
+    def add_binary_noise(self, data, noise_param= 0):
+        noise = []
+        if noise_param == 0:
+            noise = np.array([0 for reward in data])
+        elif noise_param == 1:
+            noise = np.array([1 for reward in data])
+        else:
+            noise = np.array([BernoulliDistribution(noise_param).sample() for reward in data])
+        noise_reward = data + noise
+        noise_reward = np.remainder(noise_reward, 2)
+        return noise_reward
 
     def generate_reports_2(self):
         reports = []
@@ -50,36 +62,16 @@ class Agent():
 
         return reports #returns an array of bernoulli parameters
 
-    # def generate_reports(self):
-    #     reports = []
-    #     for index, dist in enumerate(self.arm_dists):
-    #         if index == self.best_arm and self.trustworthy == False:
-    #             reports.append(0)
-    #             # print("Hello")
-    #         elif index == self.target_arm and self.trustworthy == False:
-    #             reports.append(1)
-    #             # print("Goodbye")
-    #         else:
-    #             total = 0
-    #             for i in range(self.num_reports):
-    #                 total += dist.sample()
-
-    #             reports.append(total/self.num_reports)
-
-    #     return reports #returns an array of bernoulli parameters
-
     def generate_reports_sneak_attack(self):
-        reports = []
-        for index, dist in enumerate(self.arm_dists):
-            if index == self.best_arm:
-                reports.append(0.5)
-            # elif index == self.worst_arm:
-            #     reports.append(1)
-            else:
-                # reports.append(np.mean(dist.sample_array(self.num_reports)))
-                reports.append(dist.mean())
-
-
+        data = [dist.mean() for dist in self.arm_dists]
+        # arg_sorted = np.argsort(data)
+        reports = self.add_biased_noise(data)
+        # reports = np.array(reports)
+        # reports = 1 - reports
+        reports[self.best_arm] = 0
+        reports[self.worst_arm] = 1
+        # reports[arg_sorted[-2]]
+        
         return reports #returns an array of bernoulli parameters
 
 
@@ -100,8 +92,6 @@ class Agent():
             if agent.trustworthy == True:
                 reports = copy.deepcopy(prev_agent_reports[agent])
                 reports[self.best_arm] = 0.5
-                # for target_arm_index in self.target_arms:
-                #     reports[target_arm_index] = 1
                 
                 return reports
         
@@ -109,7 +99,7 @@ class Agent():
 
     def generate_reports_sleeper_attack(self, t, prev_agents, prev_agent_reports, attack="sneak"):
         reports = []
-        if np.random.rand() >= self.attack_freq:
+        if np.random.rand() < self.attack_freq:
             if attack == "copy":
                 return self.generate_reports_copy_cat_attack(prev_agents, prev_agent_reports)
             elif attack == "damage":
@@ -117,19 +107,21 @@ class Agent():
             elif attack == "sneak":
                 return self.generate_reports_sneak_attack()
         else:
-            for dist in self.arm_dists:
-                reports.append(dist.mean())
-                # reports.append(np.mean(dist.sample_array(self.num_reports)))
+            data = [dist.mean() for dist in self.arm_dists]
+            reports = self.add_biased_noise(data)
             return reports
+            # for dist in self.arm_dists:
+            #     reports.append(dist.mean())
+            # return reports
 
     def generate_reports_prolonged_attack(self, t, prev_agents, prev_agent_reports, attack="damage"):
-        reports = []
-        if (t > 100 and t < 200) or (t > 400 and t < 500) or (t > 700 and t < 800):
-            # print(t)
+        if (t > 100):
             return self.generate_reports_sneak_attack()
         else:
-            for dist in self.arm_dists:
-                reports.append(np.mean(dist.sample_array(self.num_reports)))
+            data = [dist.mean() for dist in self.arm_dists]
+            # reports = self.add_binary_noise(self.rewards)
+            # reports = self.add_noise(data)
+            reports = self.add_biased_noise(data)
             return reports
 
     def generate_reports_average_attack(self, prev_agents, prev_agent_reports):
@@ -152,18 +144,17 @@ class Agent():
     def generate_reports_max_damage(self):
         reports = []
         for dist in self.arm_dists:
-            reports.append(np.mean(BernoulliDistribution(1-dist.theta).sample_array(self.num_reports)))
-        
+            reports.append(1-dist.mean())
+
         return reports #returns an array of bernoulli parameters
 
     def generate_reports_random_attack(self):
         reports = []
         for index, __ in enumerate(self.arm_dists):
-            if index in self.target_arms:
-                reports.append(1)
+            if index == self.best_arm:
+                reports.append(0)
             else:
-                rating = np.random.rand()
-                reports.append(rating)
+                reports.append(np.random.rand())
 
         return reports #returns an array of bernoulli parameters
 
@@ -178,11 +169,11 @@ class Agent():
         return reports #returns an array of bernoulli parameters
 
     def generate_reports_v2(self, t, attack, prev_agents= [], prev_agent_reports= []):
-        # [print(dist.mean()) for dist in self.arm_dists]
+        data = [dist.mean() for dist in self.arm_dists]
         if self.trustworthy == True:
-            reports = []
-            for dist in self.arm_dists:
-                reports.append(np.mean(dist.sample_array(self.num_reports)))
+            # reports = self.add_noise(data)
+            # reports = self.add_binary_noise(self.rewards)
+            reports = self.add_biased_noise(data)
             
             return reports #returns an array of bernoulli parameters
         else:
