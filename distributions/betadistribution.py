@@ -17,8 +17,8 @@ class BetaDistribution(Distribution):
         return beta.pdf(x, self.alpha, self.beta)
     
     def update(self, data):
-        self.alpha += int((data == 1))
-        self.beta += int((data == 0))
+        self.alpha += (data == 1)
+        self.beta += (data == 0)
     
     def update_custom(self, delalpha, delbeta):
         self.alpha += delalpha

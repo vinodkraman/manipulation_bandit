@@ -265,3 +265,49 @@ the dishonest one will be small, but the bonus on the honest one will be big, so
 we cant have a scenario where we add the bonus to one arm but not another. If we add the bonus to the arm chosen by the adversaries. Then, we need to make sure that the bonus we add is smaller enough so that its smaller than the best arm, other wise, there is no way. 
 
 it is kinda of like full information. We can update everything, all at once. 
+
+The idea is that as an arm gets pulled more and more, there is less and less need for the report. 
+
+So the more times an arm gets pulled, the less we add reports. In fact, if we can probably be like
+take the max. Basicaly as we pull it more and more, the amount that the reprots add becomes smaller and smaller. 
+As we pull an arm more and more, we stop using expert advice. ad
+
+
+how do we know when we found an optimal arm? that's the problem, when should we exploit?
+
+
+as we add more and more reports we want to start comparing the means instead of the quantiles. 
+So, 
+
+
+
+300 - 
+
+max arm pulled is 200
+
+50 
+
+150 + 50 = 200
+
+comparing means 
+
+Regime 1:
+
+num_reports is small --> then use sa reports
+num_reports is large but difference between max and min pulls is small --> use reports
+num_reports is large and difference between max and min is large --> use?
+
+what would the smarter adversaries do? They wouldnt make use of all their sybils, instead 
+they would perhaps use some of their sybils to make their other sybils gain reputation, 
+
+thompson sampling is more powerful in my opinion because of its randomization aspect. 
+
+we want to use randomness to our advantage. 
+
+an adversary keeps track of the beta distributions as you do. IN order to influence, they need to gain reputation. So what they do is they allow their agents to gain reputation. Then, in 
+the adversary commands a subset of the experts to act malicious, 
+
+if we cap the influence doe, then there is absolutely no way, even more agents won't do the trick.
+
+
+how do we - 

@@ -46,6 +46,10 @@ class InfluenceLimiter_bayes():
         return np.mean(npa[:,arm_index])
     
     def _compute_IL_posterior(self, t):
+        # W = 0
+        # for agent, reputation in self.agent_reputations_overall.items():
+        #     W += int(min(1, reputation) == 1)
+        max_pulls = max([arm.pulls for arm in self.bandit.arms])
         for (arm_index, arm) in enumerate(self.bandit.arms):
             self.prediction_history[arm_index]=[]
             self.posterior_history[arm_index] = [BetaDistribution(0.5, 1-0.5)]
@@ -54,7 +58,7 @@ class InfluenceLimiter_bayes():
 
             weight_0 = 1
             weight = copy.deepcopy(weight_0) #have to make dependant on initial reputation and 
-            running_sum = 0.5 * weight
+            running_sum = 0.5 * weight_0
 
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
@@ -84,6 +88,9 @@ class InfluenceLimiter_bayes():
             running_sum -= 0.5 * weight_0
             weight -= weight_0
             q_j_tilde = running_sum/weight
+            # num_reports = min(num_reports, max(100 - arm.pulls, 0))
+            # # num_reports = min(num_reports, 30)
+            # # num_reports = min(num_reports, max_pulls-arm.pulls)
             alpha_tilde = q_j_tilde * (num_reports) 
             beta_tilde = (1-q_j_tilde) * (num_reports)
             # print("arm:", arm_index)
@@ -96,7 +103,9 @@ class InfluenceLimiter_bayes():
         W = 0
         for agent, reputation in self.agent_reputations_overall.items():
             W += int(min(1, reputation) == 1)
-        selected_arm, prediction  = self.bandit.select_arm(t, W, influence_limit = influence_limit)
+
+        # print(W)
+        selected_arm, prediction  = self.bandit.select_arm(t, W, influence_limit = True)
         return selected_arm, 0
         #we should also use quantile for the predictions!
 
@@ -114,8 +123,9 @@ class InfluenceLimiter_bayes():
                 self.agent_reputations_track[agent].append(self.agent_reputations_overall[agent])
 
     def _compute_T_posterior(self, selected_arm, reward):
-        # self.bandit.arms[selected_arm].reward_dist.update(reward)
-        self.bandit.update(selected_arm, reward)
+        self.bandit.arms[selected_arm].reward_dist.update(reward)
+        self.bandit.arms[selected_arm].pulls += 1
+        # self.bandit.update(selected_arm, reward)
 
 
     def update(self, arm, reward):

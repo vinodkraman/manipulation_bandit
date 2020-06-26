@@ -68,7 +68,7 @@ class Influencelimiter_frequent():
             #iterate through each agent and process their report
             for agent_index, agent in enumerate(self.agency.agents):
                 # print(agent.id)
-                gamma = min(self.agent_reputations_overall[agent], 1)
+                gamma = min(self.agent_reputations[agent][arm], 1)
                 num_reports += gamma * agent.num_reports
 
                 temp_running_sum = running_sum + (self.agency.agent_reports[agent][arm_index])

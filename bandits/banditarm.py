@@ -19,7 +19,7 @@ class BanditArm():
         return self.influence_reward_dist
 
     def sample(self, influence_limit = False):
-        if influence_limit:
+        if influence_limit == True:
             return self.influence_reward_dist.sample()
         else:
             return self.reward_dist.sample()
@@ -41,6 +41,7 @@ class BanditArm():
     def reward_dist_quantile(self, prob, influence_limit=False):
         if influence_limit:
             # print(self.influence_reward_dist.get_params())
+            # print("KKK")
             return self.influence_reward_dist.get_quantile(prob)
         else:
             return self.reward_dist.get_quantile(prob)

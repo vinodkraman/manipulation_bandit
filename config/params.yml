@@ -4,8 +4,8 @@ params:
   no_arms: 10
   no_exp: 20
   no_reports: 10
-  trust_ratio: 0.20
-  no_agents: 100
+  trust_ratio: 0.30
+  no_agents: 10
   no_targets: 1
   attack_freq: 0.50
   attack: "sneak"

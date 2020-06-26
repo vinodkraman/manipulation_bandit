@@ -71,6 +71,6 @@ from scipy.stats import truncnorm
 # #so the issue is, if the experts do not perform the sleeper attack, then we are fine, since we can just greedy exploit q_tilde. If the experts 
 # #exploit the sleeper attack, then there is no way for us to be able to do anything. 
 
-s = np.random.dirichlet((1, 1, 10, 1, 1), 1).transpose()
-# s = np.random.binomial(5, 0.75, 1)
+s = np.random.binomial(10000, 0.6)/10000
 print(s)
+# s = np.random.binomial(5, 0.75, 1)

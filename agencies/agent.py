@@ -25,7 +25,7 @@ class Agent():
         return final
 
 
-    def add_biased_noise(self, data, sigma= 1):
+    def add_biased_noise(self, data, sigma= 0):
         mult = np.array([-1 if elem == 0 else 1 for elem in self.rewards])
         noise = np.array([np.random.normal(0, sigma) for elem in mult])
         # noise = np.random.normal(0, sigma, len(self.arm_dists))
@@ -35,6 +35,10 @@ class Agent():
         new_hidden_logits = noise + logits
         final = [1/(1+np.exp(-val)) for val in new_hidden_logits]
         return final
+
+    def add_binomial_noise(self, data):
+        test = [np.random.binomial(self.num_reports, param)/self.num_reports for param in data]
+        return test
 
     def add_binary_noise(self, data, noise_param= 0):
         noise = []
@@ -67,9 +71,9 @@ class Agent():
         # arg_sorted = np.argsort(data)
         reports = self.add_biased_noise(data)
         # reports = np.array(reports)
-        # reports = 1 - reports
+        # reports = 1 - reportsccc
         reports[self.best_arm] = 0
-        reports[self.worst_arm] = 1
+        # reports[self.worst_arm] = 1
         # reports[arg_sorted[-2]]
         
         return reports #returns an array of bernoulli parameters
@@ -115,7 +119,7 @@ class Agent():
             # return reports
 
     def generate_reports_prolonged_attack(self, t, prev_agents, prev_agent_reports, attack="damage"):
-        if (t > 100):
+        if (t > 500):
             return self.generate_reports_sneak_attack()
         else:
             data = [dist.mean() for dist in self.arm_dists]

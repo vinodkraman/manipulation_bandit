@@ -3,6 +3,9 @@ from bandits.bayesUCB import BayesUCB
 from bandits.UCB_influence import UCB_influence
 from bandits.UCB_influence_2 import UCB_influence_2
 from bandits.freq_ucb import Freq_UCB
+from bandits.thompson_sampling import Thompson_Sampling
+from bandits.thompson_sampling_inf import Thompson_Sampling_Inf
+
 
 from bandits.UCB1 import UCB1
 from bandits.bayesUCBMean import BayesUCBMean
@@ -109,6 +112,8 @@ ucb_expert_greedy = UCB_Expert_Greedy(T, K, world_priors)
 kl_expert_greedy = KL_Expert_Greedy(T, K, world_priors)
 epsilon_greedy = EpsilonGreedy(T, K, world_priors)
 freq_ucb = Freq_UCB(T, K, world_priors)
+thompson_sampling = Thompson_Sampling(T, K, world_priors)
+thompson_sampling_inf = Thompson_Sampling_Inf(T, K, world_priors)
 
 
 influencelimiter_ucb = InfluenceLimiter_study_10(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-6))
@@ -119,9 +124,11 @@ ucb_influencelimitier_20 = Influencelimiter_freq(copy.deepcopy(expert_greedy), n
 ucb_influencelimitier_50 = Influencelimiter_freq(copy.deepcopy(expert_greedy), nature.agency, num_reports, np.exp(-10), 50)
 greedy_influencelimitier = Influencelimiter_freq_test(copy.deepcopy(kl_expert_greedy), nature.agency, num_reports, np.exp(-5), 50)
 test_influencelimitier = Influencelimiter_frequent(copy.deepcopy(kl_expert_greedy), nature.agency, num_reports, np.exp(-10), 50)
-bayes_influence_limiter = InfluenceLimiter_bayes(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-10))
+bayes_influence_limiter = InfluenceLimiter_bayes(copy.deepcopy(bayes_ucb), nature.agency, num_reports, np.exp(-15))
+thom_influence_limiter = InfluenceLimiter_bayes(copy.deepcopy(thompson_sampling_inf), nature.agency, num_reports, np.exp(-15))
+
 exp5 = Exp5(copy.deepcopy(ucb_influence), nature.agency, num_reports, np.exp(-5))
-freq_influencelimiter = Influencelimiter_frequent(copy.deepcopy(freq_ucb), nature.agency, num_reports, np.exp(-10), 50)
+freq_influencelimiter = Influencelimiter_frequent(copy.deepcopy(freq_ucb), nature.agency, num_reports, np.exp(-15), 50)
 
 non_influencelimiter = NonInfluenceLimiter(copy.deepcopy(bayes_ucb), nature.agency, num_reports)
 non_exp5 = Non_exp5(copy.deepcopy(bayes_ucb), nature.agency, num_reports)
@@ -129,7 +136,7 @@ non_influencelimiter_ucb = NonInfluenceLimiter_UCB(copy.deepcopy(freq_ucb), natu
 
 oracle = Oracle_ucb(copy.deepcopy(expert_greedy), nature.agency, 50)
 
-bandits = [ucb, bayes_influence_limiter]
+bandits = [thompson_sampling, thom_influence_limiter]
 
 key_map = {
                 ucb_influencelimitier_1:"ucb_influencelimitier_1",
@@ -143,7 +150,9 @@ key_map = {
                 test_influencelimitier:"influencelimitier",
                 bayes_influence_limiter:"bayes_influence_limiter",
                 bayes_ucb:"bayes_ucb",
-                freq_influencelimiter:"freq_influencelimiter"
+                freq_influencelimiter:"freq_influencelimiter",
+                thom_influence_limiter:"thom_influence_limiter",
+                thompson_sampling:"thompson_sampling"
 }
 # key_map = {non_influencelimiter_ucb:"non_influencelimiter_ucb", ucb_influencelimitier_2:"ucb_influencelimitier_2", non_exp5:"non_exp5", ucb:"ucb", exp5:"SEQ-EXP", ucb_influencelimitier:"ucb_influencelimitier", influencelimiter_ucb:"influencelimiter_ucb", non_influencelimiter:"non_influencelimiter", bayes_ucb:"bayes_ucb", thompson:"thompson"}
 key_color = {
@@ -159,8 +168,9 @@ key_color = {
                 test_influencelimitier:"blue",
                 bayes_influence_limiter:"blue",
                 bayes_ucb:"green",
-                freq_influencelimiter:"red"
-
+                freq_influencelimiter:"red",
+                thom_influence_limiter:"purple",
+                thompson_sampling:"red"
 }
 
 cumulative_regret_history = {bandit: np.zeros((num_exp, T)) for bandit in bandits}
@@ -234,8 +244,9 @@ for exp in pbar(range(num_exp)):
 
     # exp5.plot_reputations()
     # plt.plot(cumulative_regret_history[ucb_influencelimitier][exp])
-    # bayes_influence_limiter.plot_reputations()
-    # plt.plot(cumulative_regret_history[bayes_influence_limiter][exp])
+    # thom_influence_limiter.plot_reputations()
+    # plt.plot(cumulative_regret_history[thom_influence_limiter][exp], color="red")
+    # plt.plot(cumulative_regret_history[thompson_sampling][exp], color="blue")
     # # # # # plt.plot(cumulative_reward[test_influencelimitier][exp])
     # plt.show()
 
